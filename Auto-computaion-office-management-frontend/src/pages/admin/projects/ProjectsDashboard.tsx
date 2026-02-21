@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, DollarSign, Users, ArrowRight, Loader2 } from "lucide-react";
+import { Plus, Search, DollarSign, Users, ArrowRight, Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { useNotification } from "@/components/NotificationProvider";
 import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 // import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,6 +32,8 @@ const ProjectsDashboard: React.FC = () => {
     const [employees, setEmployees] = useState<any[]>([]); // For client selection (using users for now)
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
+    const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
     // Form
     const [newProject, setNewProject] = useState({
@@ -225,13 +230,56 @@ const ProjectsDashboard: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                             <div className="space-y-2">
+                            <div className="space-y-2 flex flex-col">
                                 <Label>Start Date</Label>
-                                <Input type="date" value={newProject.start_date} onChange={(e) => setNewProject({...newProject, start_date: e.target.value})} />
+                                <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={`w-full justify-start text-left font-normal ${!newProject.start_date && "text-muted-foreground"}`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {newProject.start_date ? format(new Date(newProject.start_date), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newProject.start_date ? new Date(newProject.start_date) : undefined}
+                                            onSelect={(date) => {
+                                                setNewProject({...newProject, start_date: date ? format(date, "yyyy-MM-dd") : ""});
+                                                setIsStartDateOpen(false);
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                             <div className="space-y-2">
+                             <div className="space-y-2 flex flex-col">
                                 <Label>Deadline</Label>
-                                <Input type="date" value={newProject.deadline} onChange={(e) => setNewProject({...newProject, deadline: e.target.value})} />
+                                <Popover open={isDeadlineOpen} onOpenChange={setIsDeadlineOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={`w-full justify-start text-left font-normal ${!newProject.deadline && "text-muted-foreground"}`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {newProject.deadline ? format(new Date(newProject.deadline), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newProject.deadline ? new Date(newProject.deadline) : undefined}
+                                            onSelect={(date) => {
+                                                setNewProject({...newProject, deadline: date ? format(date, "yyyy-MM-dd") : ""});
+                                                setIsDeadlineOpen(false);
+                                            }}
+                                            disabled={(date) => newProject.start_date ? date < new Date(newProject.start_date + 'T00:00:00') : false}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
 

@@ -41,7 +41,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       {children}
 
       {createPortal(
-        <div className="fixed top-5 right-5 space-y-3 z-50">
+        <div className="fixed top-5 right-5 space-y-3 z-[300]">
           {notifications.map((n) => (
             <div
               key={n.id}

@@ -1,15 +1,14 @@
-
 export const welcomeEmployeeEmail = (
-    employeeName: string,
-    employeeEmail: string,
-    adminName: string,
-    dashboardLink: string,
-    password: string,
-    designation: string,
-    joiningDate: string,
-    employmentType: string
+  employeeName: string,
+  employeeEmail: string,
+  adminName: string,
+  dashboardLink: string,
+  password: string,
+  designation: string,
+  joiningDate: string,
+  employmentType: string,
 ) => {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,7 +35,7 @@ export const welcomeEmployeeEmail = (
 <body>
     <div class="container">
         <div class="header">
-
+            <img src="https://autocomputation.com/wp-content/uploads/2025/07/autocomputation-logo.png" alt="Auto Computation Logo" style="max-height: 50px; margin-bottom: 20px;">
             <h1>Welcome Aboard to the team of Auto Computation! 🎉</h1>
             <p>We are excited to have you join us</p>
         </div>

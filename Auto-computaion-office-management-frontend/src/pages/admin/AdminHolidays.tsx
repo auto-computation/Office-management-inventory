@@ -14,6 +14,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -32,6 +35,7 @@ const AdminHolidays: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
     const [deleteConfirmationId, setDeleteConfirmationId] = useState<number | null>(null);
+    const [isDateOpen, setIsDateOpen] = useState(false);
 
     const { showSuccess, showError } = useNotification();
     const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -251,14 +255,31 @@ const AdminHolidays: React.FC = () => {
                                         className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 flex flex-col">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
-                                    <Input
-                                        type="date"
-                                        value={newHoliday.date}
-                                        onChange={e => setNewHoliday({ ...newHoliday, date: e.target.value })}
-                                        className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
-                                    />
+                                    <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={`w-full justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 ${!newHoliday.date && "text-muted-foreground"}`}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {newHoliday.date ? format(new Date(newHoliday.date), "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={newHoliday.date ? new Date(newHoliday.date) : undefined}
+                                                onSelect={(date) => {
+                                                    const dateStr = date ? format(date, "yyyy-MM-dd") : "";
+                                                    setNewHoliday(p => ({ ...p, date: dateStr }));
+                                                    setIsDateOpen(false);
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Type</label>

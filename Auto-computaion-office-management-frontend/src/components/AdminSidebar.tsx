@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -19,10 +19,17 @@ import {
   CheckSquare,
   MessageSquare,
   Package,
+  Warehouse,
+  Truck,
   Folder,
+  ChevronDown,
+  UserCheck,
+  ShoppingCart,
+  Receipt,
+  CreditCard,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
-import { useUser } from "./UserProvider"; // We can reuse UserProvider for now
+import { useUser } from "./UserProvider";
 
 // --- Configuration ---
 const logo = "/logo.png";
@@ -30,36 +37,47 @@ const mobileLogo = "/mobile-logo.png";
 
 type NavItem = {
   label: string;
-  to: string;
+  to?: string;
   icon: React.ReactNode;
+  children?: NavItem[];
 };
 
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/admin", icon: <LayoutDashboard size={20} /> },
-  { label: "Inventory", to: "/admin/inventory", icon: <Package size={20} /> },
+  {
+      label: "Inventory",
+      to: "#",
+      icon: <Package size={20} />,
+      children: [
+          { label: "Dashboard", to: "/admin/inventory/dashboard", icon: <LayoutDashboard size={18} /> },
+          { label: "Products", to: "/admin/inventory/products", icon: <Package size={18} /> },
+          { label: "Warehouses", to: "/admin/inventory/warehouses", icon: <Warehouse size={18} /> },
+          { label: "Suppliers", to: "/admin/inventory/suppliers", icon: <Truck size={18} /> },
+          { label: "Purchase Orders", to: "/admin/inventory/purchase-orders", icon: <ShoppingCart size={18} /> },
+          { label: "Bills", to: "/admin/inventory/bills", icon: <Receipt size={18} /> },
+          { label: "Vendor Payments", to: "/admin/inventory/vendor-payments", icon: <CreditCard size={18} /> },
+          { label: "Stock Movements", to: "/admin/inventory/stock-movements", icon: <Package size={18} /> },
+      ]
+  },
   { label: "Projects", to: "/admin/projects", icon: <Folder size={20} /> },
   { label: "Tasks", to: "/admin/tasks", icon: <CheckSquare size={20} /> },
-  { label: "Employees", to: "/admin/employees", icon: <Users size={20} /> },
   {
-    label: "Attendance",
-    to: "/admin/attendance",
-    icon: <CalendarCheck size={20} />,
+    label: "HR",
+    to: "#", // Dummy for parent
+    icon: <Users size={20} />,
+    children: [
+      { label: "Employees", to: "/admin/employees", icon: <UserCheck size={18} /> },
+      { label: "Attendance", to: "/admin/attendance", icon: <CalendarCheck size={18} /> },
+      { label: "Leaves", to: "/admin/leaves", icon: <FileText size={18} /> },
+      { label: "Meetings", to: "/admin/meetings", icon: <Clock size={18} /> }, // Changed icon to distinguish
+      { label: "Holidays", to: "/admin/holidays", icon: <Calendar size={18} /> },
+      { label: "Past Employees", to: "/admin/past-employees", icon: <Clock size={18} /> },
+    ]
   },
-  {
-    label: "Meetings",
-    to: "/admin/meetings",
-    icon: <CalendarCheck size={20} />,
-  },
-  { label: "Holidays", to: "/admin/holidays", icon: <Calendar size={20} /> },
   { label: "Chats", to: "/admin/chats", icon: <MessageSquare size={20} /> },
   { label: "Payroll", to: "/admin/payroll", icon: <Wallet size={20} /> },
-  { label: "Leaves", to: "/admin/leaves", icon: <FileText size={20} /> },
   { label: "Settings", to: "/admin/settings", icon: <Settings size={20} /> },
-  {
-    label: "Past Employees",
-    to: "/admin/past-employees",
-    icon: <Clock size={20} />,
-  },
+  
   {
     label: "Allowed IPs",
     to: "/admin/allowed-ips",
@@ -80,7 +98,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const { user: contextUser } = useUser();
   const [userData, setUserData] = useState<any>(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Hook for current location
   const [expanded, setExpanded] = useState(true);
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
+    "HR": true,
+    "Inventory": true
+  });
 
   // Auto-close mobile menu on resize
   useEffect(() => {
@@ -140,6 +163,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const toggleSidebar = () => {
     setExpanded((prev) => !prev);
   };
+  
+  const toggleSubmenu = (label: string) => {
+    if (!expanded) {
+        setExpanded(true); // Auto expand sidebar if clicking a submenu trigger
+        setTimeout(() => {
+             setOpenSubmenus(prev => ({ ...prev, [label]: !prev[label] }));
+        }, 50); // Small delay to allow sidebar expansion transition
+    } else {
+        setOpenSubmenus(prev => ({ ...prev, [label]: !prev[label] }));
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -172,7 +207,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
           fixed lg:static inset-y-0 left-0 z-[100]
           bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
           transition-all duration-300 ease-in-out
-          flex flex-col
+          flex flex-col scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800
           ${mobileOpen
             ? "translate-x-0 w-64 shadow-2xl"
             : "-translate-x-full lg:translate-x-0"
@@ -181,7 +216,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         `}
       >
         {/* Logo Section */}
-        <div className="h-20 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800/50">
+        <div className="h-20 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800/50 shrink-0">
           <div
             className={`flex items-center gap-3 overflow-hidden transition-all duration-300 ${expanded
               ? "w-full"
@@ -199,60 +234,134 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
           {/* Desktop Toggle Button */}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors absolute -right-3 top-9 border border-slate-200 dark:border-slate-700 shadow-sm z-50"
+            className="hidden lg:flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors absolute -right-3 top-9 border border-slate-200 dark:border-slate-700 shadow-sm z-50 cursor-pointer"
           >
             {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </button>
         </div>
 
         {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto py-6 px-3 space-y-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-800 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent">
-          {navItems.map((item) => (
-            <TooltipWrapper key={item.to} text={item.label} expanded={expanded}>
-              <NavLink
-                to={item.to}
-                end={item.to === "/admin"} // Only exact match for dashboard home
-                onClick={() => setMobileOpen(false)}
-                className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
-                    ${isActive
-                    ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 dark:bg-white dark:text-slate-900"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-                  }
-                    ${!isExpandedVisual ? "justify-center" : ""}
-                  `}
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  {item.icon}
-                  {/* Collapsed Badge */}
-                  {!isExpandedVisual && item.label === "Chats" && unreadCount > 0 && !location.pathname.includes('/chats') && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </span>
-                <span
-                  className={`
-                      whitespace-nowrap font-medium transition-all duration-300 relative z-10 flex-1 flex items-center justify-between
-                      ${isExpandedVisual
-                      ? "w-auto opacity-100 ml-1"
-                      : "w-0 opacity-0 hidden"
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 space-y-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-800 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent">
+          {navItems.map((item) => {
+              if (item.children) {
+                  // Parent Item with Children (e.g., HR)
+                  const isOpen = openSubmenus[item.label];
+                  const isActiveParent = item.children.some(child => child.to && location.pathname.startsWith(child.to));
+                  
+                  return (
+                      <div key={item.label} className="space-y-1">
+                          <TooltipWrapper text={item.label} expanded={expanded}>
+                              <button
+                                  onClick={() => toggleSubmenu(item.label)}
+                                  className={`
+                                      w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden cursor-pointer
+                                      ${isActiveParent
+                                          ? "text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800"
+                                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                                      }
+                                      ${!isExpandedVisual ? "justify-center" : ""}
+                                  `}
+                              >
+                                   <span className="relative z-10 flex items-center justify-center">
+                                      {item.icon}
+                                   </span>
+                                   <span
+                                      className={`
+                                          whitespace-nowrap font-medium transition-all duration-300 relative z-10 flex-1 flex items-center justify-between
+                                          ${isExpandedVisual
+                                          ? "w-auto opacity-100 ml-1"
+                                          : "w-0 opacity-0 hidden"
+                                          }
+                                      `}
+                                  >
+                                      {item.label}
+                                      <ChevronDown 
+                                          size={16} 
+                                          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                                      />
+                                  </span>
+                              </button>
+                          </TooltipWrapper>
+
+                          {/* Children */}
+                           <div className={`
+                                overflow-hidden transition-all duration-300 ease-in-out space-y-1
+                                ${isOpen && isExpandedVisual ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}
+                           `}>
+                               {item.children.map(child => (
+                                   <NavLink
+                                       key={child.to}
+                                       to={child.to!}
+                                       onClick={() => setMobileOpen(false)}
+                                       className={({ isActive }) => `
+                                            flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ml-4 group relative overflow-hidden
+                                            ${isActive
+                                            ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
+                                            : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                                            }
+                                        `}
+                                   >
+                                        <span className="relative z-10 flex items-center justify-center">
+                                            {child.icon}
+                                        </span>
+                                        <span className="whitespace-nowrap font-medium text-sm">
+                                            {child.label}
+                                        </span>
+                                   </NavLink>
+                               ))}
+                           </div>
+                      </div>
+                  )
+              }
+
+              // Normal Item
+              return (
+                <TooltipWrapper key={item.to} text={item.label} expanded={expanded}>
+                <NavLink
+                    to={item.to!}
+                    end={item.to === "/admin"} // Only exact match for dashboard home
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
+                        ${isActive
+                        ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 dark:bg-white dark:text-slate-900"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                     }
+                        ${!isExpandedVisual ? "justify-center" : ""}
                     `}
                 >
-                  {item.label}
-                  {/* Expanded Badge */}
-                  {item.label === "Chats" && unreadCount > 0 && !location.pathname.includes('/chats') && (
-                    <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm">
-                      {unreadCount}
+                    <span className="relative z-10 flex items-center justify-center">
+                    {item.icon}
+                    {/* Collapsed Badge */}
+                    {!isExpandedVisual && item.label === "Chats" && unreadCount > 0 && !location.pathname.includes('/chats') && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                    )}
                     </span>
-                  )}
-                </span>
-              </NavLink>
-            </TooltipWrapper>
-          ))}
+                    <span
+                    className={`
+                        whitespace-nowrap font-medium transition-all duration-300 relative z-10 flex-1 flex items-center justify-between
+                        ${isExpandedVisual
+                        ? "w-auto opacity-100 ml-1"
+                        : "w-0 opacity-0 hidden"
+                        }
+                        `}
+                    >
+                    {item.label}
+                    {/* Expanded Badge */}
+                    {item.label === "Chats" && unreadCount > 0 && !location.pathname.includes('/chats') && (
+                        <span className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm">
+                        {unreadCount}
+                        </span>
+                    )}
+                    </span>
+                </NavLink>
+                </TooltipWrapper>
+              );
+          })}
         </div>
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-4 shrink-0">
           <div className="flex items-center  justify-between gap-2">
             {/* Logout Button */}
             <TooltipWrapper text="Logout" expanded={expanded}>
@@ -332,7 +441,7 @@ const ThemeToggleBtn = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
     >
       {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>

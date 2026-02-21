@@ -93,6 +93,7 @@ const Settings: React.FC = () => {
             showError(data.message || "Failed to upload avatar");
           }
         } catch (error) {
+          console.error(error);
           showError("Network error during upload");
         }
       };
@@ -135,6 +136,7 @@ const Settings: React.FC = () => {
         showError(data.message || "Failed to update profile");
       }
     } catch (error) {
+      console.error(error);
       showError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
@@ -299,7 +301,7 @@ const Settings: React.FC = () => {
                         <Input
                           name="phone"
                           value={formData.phone}
-                          onChange={handleInputChange}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/[^0-9+-\s]/g, '') }))}
                           className="pl-9 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-green-500 text-slate-900 dark:text-white"
                         />
                       </div>
