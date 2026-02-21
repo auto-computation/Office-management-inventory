@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", to: "/admin", icon: <LayoutDashboard size={20} /> },
   { label: "Inventory", to: "/admin/inventory", icon: <Package size={20} /> },
   { label: "Projects", to: "/admin/projects", icon: <Folder size={20} /> },
+  { label: "Contracts", to: "/admin/contracts", icon: <FileText size={20} /> },
   { label: "Tasks", to: "/admin/tasks", icon: <CheckSquare size={20} /> },
   { label: "Employees", to: "/admin/employees", icon: <Users size={20} /> },
   {
@@ -65,6 +66,7 @@ const navItems: NavItem[] = [
     to: "/admin/allowed-ips",
     icon: <Shield size={20} />,
   },
+
 ];
 
 interface AdminSidebarProps {

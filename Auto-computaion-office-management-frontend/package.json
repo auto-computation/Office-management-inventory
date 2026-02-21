@@ -38,7 +38,7 @@
     "lucide": "^0.562.0",
     "lucide-react": "^0.555.0",
     "react": "^19.2.0",
-    "react-day-picker": "^9.13.0",
+    "react-day-picker": "^9.13.2",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6",
     "socket.io-client": "^4.8.3",

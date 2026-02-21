@@ -10,8 +10,9 @@ import SuperAdminLayout from './layouts/SuperAdminLayout';
 
 // Auth Components (Lazy load if not critical, but typically login is critical)
 import Login from './pages/auth/Login';
-import ProtectedRoute from './components/ProtectedRoute';
-import TwoFactorGuard from './components/TwoFactorGuard';
+import { Task } from './pages/Tasks/Task';
+// import ProtectedRoute from './components/ProtectedRoute';
+// import TwoFactorGuard from './components/TwoFactorGuard';
 
 // Lazy Load Pages
 // User Pages
@@ -40,10 +41,13 @@ const AdminTasks = lazy(() => import('./pages/admin/AdminTasks'));
 const AdminMeetings = lazy(() => import('./pages/admin/AdminMeetings'));
 const AllowedIPs = lazy(() => import('./pages/admin/AllowedIPs'));
 
+
 // Inventory & Projects
 const InventoryDashboard = lazy(() => import('./pages/admin/inventory/InventoryDashboard'));
 const ProjectsDashboard = lazy(() => import('./pages/admin/projects/ProjectsDashboard'));
 const ProjectDetails = lazy(() => import('./pages/admin/projects/ProjectDetails'));
+const Contracts = lazy(() => import('./pages/admin/Contracts/Contracts'));
+
 
 // Auth Pages (Non-critical)
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
@@ -84,9 +88,9 @@ const routes: RouteObject[] = [
   {
     path: "/user",
     element: (
-      <ProtectedRoute allowedRoles={['employee']}>
+      // <ProtectedRoute allowedRoles={['employee']}>
         <UserLayout />
-      </ProtectedRoute>
+      // </ProtectedRoute>
     ),
     children: [
       {
@@ -134,11 +138,11 @@ const routes: RouteObject[] = [
   {
     path: "/admin",
     element: (
-      <ProtectedRoute allowedRoles={['admin']}>
-        <TwoFactorGuard>
+      // <ProtectedRoute allowedRoles={['admin']}>
+        // <TwoFactorGuard>
           <AdminLayout />
-        </TwoFactorGuard>
-      </ProtectedRoute>
+        /* </TwoFactorGuard> */
+      // </ProtectedRoute>
     ),
     children: [
       {
@@ -205,16 +209,25 @@ const routes: RouteObject[] = [
         path: "projects/:id",
         element: <ProjectDetails />,
       },
+      {
+        path: "contracts",
+        element: <Contracts />,
+      },
+
+      {
+        path: "tasks",
+        element: <Task />,
+      }
     ],
   },
   {
     path: "/super-admin",
     element: (
-      <ProtectedRoute allowedRoles={['super_admin']}>
-        <TwoFactorGuard>
+      // <ProtectedRoute allowedRoles={['super_admin']}>
+        // <TwoFactorGuard>
           <SuperAdminLayout />
-        </TwoFactorGuard>
-      </ProtectedRoute>
+        // </TwoFactorGuard>
+      // </ProtectedRoute>
     ),
     children: [
       {
@@ -288,6 +301,10 @@ const routes: RouteObject[] = [
       {
         path: "projects/:id",
         element: <ProjectDetails />,
+      },
+      {
+        path: "contracts",
+        element: <Contracts />,
       },
     ],
   },

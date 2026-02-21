@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Folder,
   Package,
+  FileSignature,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "./UserProvider";
@@ -107,6 +108,11 @@ const navItems: NavItem[] = [
     label: "Audit Logs",
     to: "/super-admin/audit-logs",
     icon: <Calendar size={20} />,
+  },
+  {
+    label: "Contracts",
+    to: "/super-admin/contracts",
+    icon: <FileSignature size={20} />,
   },
 ];
 
