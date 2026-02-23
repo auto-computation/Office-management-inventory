@@ -8,11 +8,13 @@ import {
     XCircle,
     Briefcase,
     Plane,
-    Stethoscope
+    Stethoscope,
+    Calendar as CalendarIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import {
     Select,
@@ -57,6 +59,8 @@ interface FormData {
 
 const ApplyLeave: React.FC = () => {
     // --- State ---
+    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
+    const [isEndDateOpen, setIsEndDateOpen] = useState(false);
     const [formData, setFormData] = useState<FormData>({
         leaveType: "casual",
         startDate: undefined,
@@ -80,12 +84,12 @@ const ApplyLeave: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 // Map backend data to frontend interface
-                const mappedHistory: LeaveRequest[] = data.map((item: any) => ({
+                const mappedHistory: LeaveRequest[] = data.map((item: { id: number | string; type: LeaveType; start_date: string; end_date?: string; days?: number | string; reason: string; status: string; created_at?: string }) => ({
                     id: item.id.toString(),
                     type: item.type,
                     startDate: item.start_date,
                     endDate: item.end_date || item.start_date, // Fallback if end_date missing
-                    days: parseInt(item.days) || 1,
+                    days: parseInt(String(item.days)) || 1,
                     reason: item.reason,
                     status: item.status.toLowerCase(), // Ensure lowercase for badge logic
                     appliedOn: item.created_at || "" // Not used in UI but required by type
@@ -103,7 +107,7 @@ const ApplyLeave: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 // Map icons based on type
-                const mappedBalances = data.map((b: any) => ({
+                const mappedBalances = data.map((b: { type: LeaveType; label: string; total: number; used: number; color: string; }) => ({
                     ...b,
                     icon: b.type === 'sick' ? <Stethoscope size={20} /> : b.type === 'casual' ? <Plane size={20} /> : <Briefcase size={20} />
                 }));
@@ -118,6 +122,7 @@ const ApplyLeave: React.FC = () => {
     useEffect(() => {
         fetchLeaves();
         fetchBalances();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -134,12 +139,6 @@ const ApplyLeave: React.FC = () => {
 
         const days = differenceInDays(end, start) + 1;
         setTotalDays(days > 0 ? days : 0);
-    };
-
-    const handleDateChange = (field: "startDate" | "endDate", value: string) => {
-        // Create date at noon to avoid timezone shifting issues
-        const date = value ? new Date(value + 'T12:00:00') : undefined;
-        setFormData((prev) => ({ ...prev, [field]: date }));
     };
 
     const getStatusBadge = (status: LeaveStatus) => {
@@ -198,9 +197,9 @@ const ApplyLeave: React.FC = () => {
             });
             setTotalDays(0);
 
-        } catch (error: any) {
+        } catch (error) {
             console.error("Leave application error:", error);
-            showError(error.message || "Something went wrong.");
+            showError((error as Error).message || "Something went wrong.");
         } finally {
             setIsSubmitting(false);
         }
@@ -281,30 +280,57 @@ const ApplyLeave: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* From Date */}
-                                <div className="space-y-2">
+                                <div className="space-y-2 flex flex-col">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">From Date</label>
-                                    <Input
-                                        type="date"
-                                        required
-                                        value={formData.startDate ? format(formData.startDate, 'yyyy-MM-dd') : ''}
-                                        onChange={(e) => handleDateChange('startDate', e.target.value)}
-                                        // 'dark:[color-scheme:dark]' forces the calendar popup to be dark in dark mode
-                                        className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white dark:scheme-dark"
-                                    />
+                                    <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={`w-full justify-start text-left font-normal bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white ${!formData.startDate && "text-muted-foreground"}`}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.startDate ? format(formData.startDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.startDate}
+                                                onSelect={(date) => {
+                                                    setFormData(prev => ({ ...prev, startDate: date }));
+                                                    setIsStartDateOpen(false);
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
 
-                                {/* To Date */}
-                                <div className="space-y-2">
+                                <div className="space-y-2 flex flex-col">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">To Date</label>
-                                    <Input
-                                        type="date"
-                                        required
-                                        value={formData.endDate ? format(formData.endDate, 'yyyy-MM-dd') : ''}
-                                        min={formData.startDate ? format(formData.startDate, 'yyyy-MM-dd') : ''}
-                                        onChange={(e) => handleDateChange('endDate', e.target.value)}
-                                        className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white dark:scheme-dark"
-                                    />
+                                    <Popover open={isEndDateOpen} onOpenChange={setIsEndDateOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={`w-full justify-start text-left font-normal bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white ${!formData.endDate && "text-muted-foreground"}`}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.endDate ? format(formData.endDate, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.endDate}
+                                                onSelect={(date) => {
+                                                    setFormData(prev => ({ ...prev, endDate: date }));
+                                                    setIsEndDateOpen(false);
+                                                }}
+                                                disabled={(date) => formData.startDate ? date < formData.startDate : false}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                             </div>
 

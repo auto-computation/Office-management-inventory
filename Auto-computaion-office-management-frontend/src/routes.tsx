@@ -43,7 +43,14 @@ const AllowedIPs = lazy(() => import('./pages/admin/AllowedIPs'));
 
 
 // Inventory & Projects
-const InventoryDashboard = lazy(() => import('./pages/admin/inventory/InventoryDashboard'));
+const InventoryOverview = lazy(() => import('./pages/admin/inventory/InventoryOverview'));
+const Products = lazy(() => import('./pages/admin/inventory/Products'));
+const Warehouses = lazy(() => import('./pages/admin/inventory/Warehouses'));
+const Suppliers = lazy(() => import('./pages/admin/inventory/Suppliers'));
+const PurchaseOrders = lazy(() => import('./pages/admin/inventory/PurchaseOrders'));
+const Bills = lazy(() => import('./pages/admin/inventory/Bills'));
+const VendorPayments = lazy(() => import('./pages/admin/inventory/VendorPayments'));
+const StockMovements = lazy(() => import('./pages/admin/inventory/StockMovements'));
 const ProjectsDashboard = lazy(() => import('./pages/admin/projects/ProjectsDashboard'));
 const ProjectDetails = lazy(() => import('./pages/admin/projects/ProjectDetails'));
 const Contracts = lazy(() => import('./pages/admin/Contracts/Contracts'));
@@ -199,7 +206,39 @@ const routes: RouteObject[] = [
       },
       {
         path: "inventory",
-        element: <InventoryDashboard />,
+        element: <InventoryOverview />,
+      },
+      {
+        path: "inventory/dashboard",
+        element: <InventoryOverview />,
+      },
+      {
+        path: "inventory/products",
+        element: <Products />,
+      },
+      {
+        path: "inventory/warehouses",
+        element: <Warehouses />,
+      },
+      {
+        path: "inventory/suppliers",
+        element: <Suppliers />,
+      },
+      {
+        path: "inventory/purchase-orders",
+        element: <PurchaseOrders />,
+      },
+      {
+        path: "inventory/bills",
+        element: <Bills />,
+      },
+      {
+        path: "inventory/vendor-payments",
+        element: <VendorPayments />,
+      },
+      {
+        path: "inventory/stock-movements",
+        element: <StockMovements />,
       },
       {
         path: "projects",
@@ -292,7 +331,39 @@ const routes: RouteObject[] = [
       },
       {
         path: "inventory",
-        element: <InventoryDashboard />,
+        element: <InventoryOverview />,
+      },
+      {
+        path: "inventory/dashboard",
+        element: <InventoryOverview />,
+      },
+      {
+        path: "inventory/products",
+        element: <Products />,
+      },
+      {
+        path: "inventory/warehouses",
+        element: <Warehouses />,
+      },
+      {
+        path: "inventory/suppliers",
+        element: <Suppliers />,
+      },
+      {
+        path: "inventory/purchase-orders",
+        element: <PurchaseOrders />,
+      },
+      {
+        path: "inventory/bills",
+        element: <Bills />,
+      },
+      {
+        path: "inventory/vendor-payments",
+        element: <VendorPayments />,
+      },
+      {
+        path: "inventory/stock-movements",
+        element: <StockMovements />,
       },
       {
         path: "projects",

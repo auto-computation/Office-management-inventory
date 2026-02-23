@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, DollarSign, Users, ArrowRight, Loader2, Folder, Target, FileText, IndianRupee, X } from "lucide-react";
+import { Plus, Search, DollarSign, Users, ArrowRight, Loader2, Folder, Target, FileText, IndianRupee, X, Calendar as CalendarIcon } from "lucide-react";
 import { useNotification } from "@/components/NotificationProvider";
 import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 // import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
@@ -117,6 +120,8 @@ const ProjectsDashboard: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
+    const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
     // Form
     const [newProject, setNewProject] = useState({

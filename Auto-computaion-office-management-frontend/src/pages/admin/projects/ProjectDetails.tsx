@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Calendar, CheckCircle, DollarSign, FileText, Plus, Target } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, CheckCircle, DollarSign, FileText, Plus, Target } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotification } from "@/components/NotificationProvider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,13 +21,51 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 
+
+interface Milestone {
+    id: number;
+    name: string;
+    due_date: string;
+    status: string;
+}
+
+interface Expense {
+    id: number;
+    title: string;
+    category: string;
+    incurred_date: string;
+    amount: number;
+}
+
+interface Invoice {
+    id: number;
+    invoice_number: string;
+    due_date: string;
+    status: 'Paid' | 'Unpaid' | 'Overdue';
+    amount: number;
+}
+
+interface Project {
+    id: number;
+    name: string;
+    status: string;
+    description: string;
+    client_name: string;
+    estimated_budget: number;
+    actual_cost: number;
+    deadline: string;
+    milestones: Milestone[];
+    expenses: Expense[];
+    invoices: Invoice[];
+}
+
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProjectDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { showSuccess, showError } = useNotification();
-    const [project, setProject] = useState<any>(null);
+    const [project, setProject] = useState<Project | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     // Modals
@@ -36,6 +77,9 @@ const ProjectDetails: React.FC = () => {
     const [newMilestone, setNewMilestone] = useState({ name: "", due_date: "", status: "Pending" });
     const [newExpense, setNewExpense] = useState({ title: "", amount: 0, category: "", incurred_date: "" });
     const [newInvoice, setNewInvoice] = useState({ invoice_number: "", amount: 0, due_date: "", status: "Unpaid" });
+    const [isMilestoneDateOpen, setIsMilestoneDateOpen] = useState(false);
+    const [isExpenseDateOpen, setIsExpenseDateOpen] = useState(false);
+    const [isInvoiceDateOpen, setIsInvoiceDateOpen] = useState(false);
 
     // Dummy Data for fallback
     const dummyProjects = [
@@ -178,8 +222,8 @@ const ProjectDetails: React.FC = () => {
             setIsMilestoneModalOpen(false);
             setNewMilestone({ name: "", due_date: "", status: "Pending" });
             fetchProjectDetails();
-        } catch (err: any) {
-            showError(err.message);
+        } catch (err) {
+            if (err instanceof Error) showError(err.message);
         }
     };
 
@@ -196,8 +240,8 @@ const ProjectDetails: React.FC = () => {
             setIsExpenseModalOpen(false);
             setNewExpense({ title: "", amount: 0, category: "", incurred_date: "" });
             fetchProjectDetails();
-        } catch (err: any) {
-             showError(err.message);
+        } catch (err) {
+             if (err instanceof Error) showError(err.message);
         }
     };
 
@@ -214,8 +258,8 @@ const ProjectDetails: React.FC = () => {
             setIsInvoiceModalOpen(false);
             setNewInvoice({ invoice_number: "", amount: 0, due_date: "", status: "Unpaid" });
             fetchProjectDetails();
-        } catch (err: any) {
-             showError(err.message);
+        } catch (err) {
+             if (err instanceof Error) showError(err.message);
         }
     };
 
@@ -224,7 +268,7 @@ const ProjectDetails: React.FC = () => {
 
     // Calculations
     const totalMilestones = project.milestones?.length || 0;
-    const completedMilestones = project.milestones?.filter((m: any) => m.status === 'Completed').length || 0;
+    const completedMilestones = project.milestones?.filter((m) => m.status === 'Completed').length || 0;
     const progress = totalMilestones > 0 ? (completedMilestones / totalMilestones) * 100 : 0;
     
     const budgetUsage = project.estimated_budget > 0 ? (project.actual_cost / project.estimated_budget) * 100 : 0;
@@ -279,7 +323,7 @@ const ProjectDetails: React.FC = () => {
                  <Card className="p-6">
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-sm text-slate-500 font-medium">Time Remaining</span>
-                        <Calendar className="h-4 w-4 text-amber-500" />
+                        <CalendarIcon className="h-4 w-4 text-amber-500" />
                     </div>
                     <div className="text-2xl font-bold mb-2">
                         {project.deadline ? 
@@ -306,7 +350,7 @@ const ProjectDetails: React.FC = () => {
                         </Button>
                     </div>
                     <div className="space-y-4">
-                        {project.milestones && project.milestones.map((milestone: any) => (
+                        {project.milestones && project.milestones.map((milestone) => (
                             <Card key={milestone.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                                 <div className="flex items-center gap-4">
                                      <div className={`p-2 rounded-full ${milestone.status === 'Completed' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}>
@@ -346,7 +390,7 @@ const ProjectDetails: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                                    {project.expenses && project.expenses.map((expense: any) => (
+                                    {project.expenses && project.expenses.map((expense) => (
                                         <tr key={expense.id}>
                                             <td className="px-4 py-3 font-medium">{expense.title}</td>
                                             <td className="px-4 py-3 text-slate-500">{expense.category}</td>
@@ -381,7 +425,7 @@ const ProjectDetails: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-950">
-                                    {project.invoices && project.invoices.map((inv: any) => (
+                                    {project.invoices && project.invoices.map((inv) => (
                                         <tr key={inv.id}>
                                             <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
                                             <td className="px-4 py-3 text-slate-500">{inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '-'}</td>
@@ -413,9 +457,30 @@ const ProjectDetails: React.FC = () => {
                             <Label>Milestone Name</Label>
                             <Input value={newMilestone.name} onChange={(e) => setNewMilestone({...newMilestone, name: e.target.value})} placeholder="e.g. Design Phase Approval" />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 flex flex-col">
                             <Label>Due Date</Label>
-                            <Input type="date" value={newMilestone.due_date} onChange={(e) => setNewMilestone({...newMilestone, due_date: e.target.value})} />
+                            <Popover open={isMilestoneDateOpen} onOpenChange={setIsMilestoneDateOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={`w-full justify-start text-left font-normal ${!newMilestone.due_date && "text-muted-foreground"}`}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {newMilestone.due_date ? format(new Date(newMilestone.due_date), "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={newMilestone.due_date ? new Date(newMilestone.due_date) : undefined}
+                                        onSelect={(date) => {
+                                            setNewMilestone({...newMilestone, due_date: date ? format(date, "yyyy-MM-dd") : ""});
+                                            setIsMilestoneDateOpen(false);
+                                        }}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </div>
                     <DialogFooter><Button onClick={handleAddMilestone}>Add Milestone</Button></DialogFooter>
@@ -436,9 +501,30 @@ const ProjectDetails: React.FC = () => {
                                 <Label>Amount</Label>
                                 <Input type="number" value={newExpense.amount} onChange={(e) => setNewExpense({...newExpense, amount: Number(e.target.value)})} />
                             </div>
-                             <div className="space-y-2">
+                             <div className="space-y-2 flex flex-col">
                                 <Label>Date</Label>
-                                <Input type="date" value={newExpense.incurred_date} onChange={(e) => setNewExpense({...newExpense, incurred_date: e.target.value})} />
+                                <Popover open={isExpenseDateOpen} onOpenChange={setIsExpenseDateOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={`w-full justify-start text-left font-normal ${!newExpense.incurred_date && "text-muted-foreground"}`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {newExpense.incurred_date ? format(new Date(newExpense.incurred_date), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newExpense.incurred_date ? new Date(newExpense.incurred_date) : undefined}
+                                            onSelect={(date) => {
+                                                setNewExpense({...newExpense, incurred_date: date ? format(date, "yyyy-MM-dd") : ""});
+                                                setIsExpenseDateOpen(false);
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
                          <div className="space-y-2">
@@ -464,9 +550,30 @@ const ProjectDetails: React.FC = () => {
                                 <Label>Amount</Label>
                                 <Input type="number" value={newInvoice.amount} onChange={(e) => setNewInvoice({...newInvoice, amount: Number(e.target.value)})} />
                             </div>
-                             <div className="space-y-2">
+                             <div className="space-y-2 flex flex-col">
                                 <Label>Due Date</Label>
-                                <Input type="date" value={newInvoice.due_date} onChange={(e) => setNewInvoice({...newInvoice, due_date: e.target.value})} />
+                                <Popover open={isInvoiceDateOpen} onOpenChange={setIsInvoiceDateOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={`w-full justify-start text-left font-normal ${!newInvoice.due_date && "text-muted-foreground"}`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {newInvoice.due_date ? format(new Date(newInvoice.due_date), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newInvoice.due_date ? new Date(newInvoice.due_date) : undefined}
+                                            onSelect={(date) => {
+                                                setNewInvoice({...newInvoice, due_date: date ? format(date, "yyyy-MM-dd") : ""});
+                                                setIsInvoiceDateOpen(false);
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </div>
                     </div>

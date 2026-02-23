@@ -26,6 +26,8 @@ import meetingRoutes from "./routes/admin/meetings.js";
 import adminDepartments from "./routes/admin/adminDepartments.js";
 import adminInventory from "./routes/admin/adminInventory.js";
 import adminProjects from "./routes/admin/adminProjects.js";
+import adminClients from "./routes/admin/adminClients.js";
+import adminContracts from "./routes/admin/adminContracts.js";
 import auditLogsRoutes from "./routes/superadmin/auditLogs.js";
 
 import settings from "./routes/employees/setting.js";
@@ -155,6 +157,8 @@ app.use("/admin/notifications", notifications);
 app.use("/admin/attendance", adminAttendance);
 app.use("/admin/inventory", adminInventory);
 app.use("/admin/projects", adminProjects);
+app.use("/admin/clients", adminClients);
+app.use("/admin/contracts", adminContracts);
 
 // Employees
 app.use("/settings", settings);

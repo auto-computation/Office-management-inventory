@@ -22,6 +22,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -98,6 +102,8 @@ const Employees: React.FC = () => {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [viewingEmployee, setViewingEmployee] = useState<any>(null);
 
+    const [isJoiningDateOpen, setIsJoiningDateOpen] = useState(false);
+
     const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
     const [removingEmployee, setRemovingEmployee] = useState<any>(null);
     const [removalReason, setRemovalReason] = useState("");
@@ -162,6 +168,7 @@ const Employees: React.FC = () => {
     };
 
     const [newEmployee, setNewEmployee] = useState(initialFormState);
+    const [customSkill, setCustomSkill] = useState("");
 
     const availableSkills = [
         "React.js", "Node.js", "Next.js", "Postgres", "Docker", "TypeScript",
@@ -177,6 +184,22 @@ const Employees: React.FC = () => {
             return { ...prev, skills };
         });
     };
+
+    const addCustomSkill = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!customSkill.trim()) return;
+        
+        const skill = customSkill.trim();
+        if (!newEmployee.skills.includes(skill)) {
+            setNewEmployee(prev => ({
+                ...prev,
+                skills: [...prev.skills, skill]
+            }));
+        }
+        setCustomSkill("");
+    };
+
+    const displayedSkills = Array.from(new Set([...availableSkills, ...newEmployee.skills]));
 
     const handleSaveEmployee = async () => {
         try {
@@ -502,7 +525,7 @@ const Employees: React.FC = () => {
                                             type="tel"
                                             placeholder="1234567890"
                                             value={newEmployee.phone}
-                                            onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
+                                            onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value.replace(/[^0-9+-\s]/g, '') })}
                                             className="flex-1 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                                         />
                                     </div>
@@ -603,18 +626,35 @@ const Employees: React.FC = () => {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Joining Date</label>
-                                <Input
-                                    type="date"
-                                    value={newEmployee.joiningDate}
-                                    onChange={(e) => setNewEmployee({ ...newEmployee, joiningDate: e.target.value })}
-                                    className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
-                                />
+                                <Popover open={isJoiningDateOpen} onOpenChange={setIsJoiningDateOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={`w-full justify-start text-left font-normal bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white ${!newEmployee.joiningDate && "text-muted-foreground"}`}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {newEmployee.joiningDate ? format(new Date(newEmployee.joiningDate), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newEmployee.joiningDate ? new Date(newEmployee.joiningDate) : undefined}
+                                            onSelect={(date) => {
+                                                const dateStr = date ? format(date, "yyyy-MM-dd") : "";
+                                                setNewEmployee(p => ({ ...p, joiningDate: dateStr }));
+                                                setIsJoiningDateOpen(false);
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
 
                             <div className="space-y-3">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Skills</label>
                                 <div className="flex flex-wrap gap-2">
-                                    {availableSkills.map((skill) => (
+                                    {displayedSkills.map((skill) => (
                                         <Badge
                                             key={skill}
                                             variant={newEmployee.skills.includes(skill) ? "default" : "outline"}
@@ -629,6 +669,28 @@ const Employees: React.FC = () => {
                                             {skill}
                                         </Badge>
                                     ))}
+                                </div>
+                                <div className="flex gap-2 mt-2">
+                                    <Input 
+                                        placeholder="Add custom skill..." 
+                                        value={customSkill}
+                                        onChange={(e) => setCustomSkill(e.target.value)}
+                                        className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-9"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                addCustomSkill(e);
+                                            }
+                                        }}
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        onClick={addCustomSkill}
+                                        variant="outline"
+                                        className="h-9 cursor-pointer border-slate-200 dark:border-slate-800 dark:text-white"
+                                    >
+                                        Add
+                                    </Button>
                                 </div>
                             </div>
                         </div>

@@ -42,7 +42,7 @@ router.post(
       const user = result.rows[0];
       const isMatch = await matchPassword(password, user.password_hash);
       if (!isMatch) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ message: "Invalid pass" });
       }
 
       let sessionId = null;

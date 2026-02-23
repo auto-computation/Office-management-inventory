@@ -6,11 +6,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Plus,
     Search,
-    Calendar,
+    Calendar as CalendarIcon,
     Trash2,
     Pencil,
     // MoreHorizontal
 } from 'lucide-react';
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
     Dialog,
     DialogContent,
@@ -77,6 +80,7 @@ const AdminTasks: React.FC = () => {
         assigned_to: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDateOpen, setIsDateOpen] = useState(false);
 
     const { showSuccess, showError } = useNotification();
     const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -84,6 +88,7 @@ const AdminTasks: React.FC = () => {
     useEffect(() => {
         fetchTasks();
         fetchEmployees();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchTasks = async () => {
@@ -129,6 +134,7 @@ const AdminTasks: React.FC = () => {
                 showError("Failed to update task");
             }
         } catch (error) {
+            console.error(error);
             showError("Failed to update task");
         }
     };
@@ -202,6 +208,7 @@ const AdminTasks: React.FC = () => {
                 showError(error.message || "Operation failed");
             }
         } catch (error) {
+            console.error(error);
             showError("Failed to save task");
         } finally {
             setIsSubmitting(false);
@@ -220,6 +227,7 @@ const AdminTasks: React.FC = () => {
                 showSuccess("Task deleted.");
             }
         } catch (error) {
+            console.error(error);
             showError("Failed to delete task");
         }
     };
@@ -273,7 +281,7 @@ const AdminTasks: React.FC = () => {
                         {['All', 'Pending', 'In Progress', 'Completed'].map((f) => (
                             <button
                                 key={f}
-                                onClick={() => setFilter(f as any)}
+                                onClick={() => setFilter(f as 'All' | 'Pending' | 'In Progress' | 'Completed')}
                                 className={`px-2 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap cursor-pointer flex justify-center items-center ${filter === f
                                     ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -371,7 +379,7 @@ const AdminTasks: React.FC = () => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                                                <Calendar className="h-3.5 w-3.5" />
+                                                <CalendarIcon className="h-3.5 w-3.5" />
                                                 <span className="text-sm">{new Date(task.due_date).toLocaleDateString()}</span>
                                             </div>
                                         </TableCell>
@@ -463,7 +471,7 @@ const AdminTasks: React.FC = () => {
                                         {task.status}
                                     </div>
                                     <div className="flex items-center text-xs text-slate-500 ml-auto whitespace-nowrap">
-                                        <Calendar className="h-3.5 w-3.5 mr-1" />
+                                        <CalendarIcon className="h-3.5 w-3.5 mr-1" />
                                         {new Date(task.due_date).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -528,14 +536,31 @@ const AdminTasks: React.FC = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 flex flex-col">
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Due Date *</label>
-                                    <Input
-                                        type="date"
-                                        className="bg-white dark:bg-slate-950 dark:border-slate-800 dark:text-white"
-                                        value={formData.due_date}
-                                        onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                                    />
+                                    <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={`w-full justify-start text-left font-normal bg-white dark:bg-slate-950 dark:border-slate-800 dark:text-white ${!formData.due_date && "text-muted-foreground"}`}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {formData.due_date ? format(new Date(formData.due_date), "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={formData.due_date ? new Date(formData.due_date) : undefined}
+                                                onSelect={(date) => {
+                                                    const dateStr = date ? format(date, "yyyy-MM-dd") : "";
+                                                    setFormData(p => ({ ...p, due_date: dateStr }));
+                                                    setIsDateOpen(false);
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                             </div>
 
@@ -545,7 +570,7 @@ const AdminTasks: React.FC = () => {
                                     <select
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus:ring-slate-300"
                                         value={formData.priority}
-                                        onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
+                                        onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                                     >
                                         <option value="Low" className="dark:bg-slate-900">Low</option>
                                         <option value="Medium" className="dark:bg-slate-900">Medium</option>
@@ -557,7 +582,7 @@ const AdminTasks: React.FC = () => {
                                     <select
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus:ring-slate-300"
                                         value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     >
                                         <option value="Pending" className="dark:bg-slate-900">Pending</option>
                                         <option value="In Progress" className="dark:bg-slate-900">In Progress</option>
