@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "./UserProvider";
-// import { useNotification } from "./NotificationProvider";
+// import { useNotification } from "./useNotification";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAttendance } from "./AttendanceProvider";
 import ClockOutConfirmationDialog from "./ClockOutConfirmationDialog";

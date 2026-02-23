@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, Search, Filter, Mail, Phone, MapPin, X, Edit, Eye, Trash2, AlertTriangle, KeyRound } from "lucide-react";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

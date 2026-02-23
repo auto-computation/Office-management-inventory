@@ -27,6 +27,12 @@ router.post(
         budget,
         estimated_hours,
         estimated_days,
+        category_id,
+        description,
+        is_public_gantt,
+        is_public_task_board,
+        requires_admin_approval,
+        send_to_client,
       } = req.body;
 
       // @ts-ignore
@@ -37,23 +43,29 @@ router.post(
 
       const query = `
             INSERT INTO projects (
-                client_id, department_id, name, summary, status, start_date, deadline, 
-                budget, estimated_hours, estimated_days, created_by
+                client_id, department_id, category_id, name, summary, description, status, start_date, deadline, 
+                budget, estimated_hours, estimated_days, is_public_gantt, is_public_task_board, requires_admin_approval, send_to_client, created_by
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
             RETURNING *
         `;
       const result = await pool.query(query, [
         client_id || null,
         department_id || null,
+        category_id || null,
         name,
-        summary,
+        summary || null,
+        description || null,
         status || "Not Started",
         start_date || null,
         deadline || null,
         budget || 0,
         estimated_hours || null,
         estimated_days || null,
+        is_public_gantt || false,
+        is_public_task_board || false,
+        requires_admin_approval || false,
+        send_to_client || false,
         userId,
       ]);
       res.status(201).json(result.rows[0]);
@@ -76,10 +88,12 @@ router.get(
             SELECT 
                 p.*, 
                 c.name as client_name,
-                d.name as department_name
+                d.name as department_name,
+                pc.name as category_name
             FROM projects p
             LEFT JOIN clients c ON p.client_id = c.id
             LEFT JOIN departments d ON p.department_id = d.id
+            LEFT JOIN project_categories pc ON p.category_id = pc.id
             ORDER BY p.created_at DESC
         `;
       const result = await pool.query(query);
@@ -104,10 +118,12 @@ router.get(
             SELECT 
                 p.*, 
                 c.name as client_name,
-                d.name as department_name
+                d.name as department_name,
+                pc.name as category_name
             FROM projects p
             LEFT JOIN clients c ON p.client_id = c.id
             LEFT JOIN departments d ON p.department_id = d.id
+            LEFT JOIN project_categories pc ON p.category_id = pc.id
             WHERE p.id = $1
         `;
       const projectRes = await pool.query(projectQuery, [id]);
@@ -177,13 +193,19 @@ router.put(
         name,
         client_id,
         department_id,
+        category_id,
         summary,
+        description,
         status,
         start_date,
         deadline,
         budget,
         estimated_hours,
         estimated_days,
+        is_public_gantt,
+        is_public_task_board,
+        requires_admin_approval,
+        send_to_client,
       } = req.body;
 
       // Check existence
@@ -197,23 +219,30 @@ router.put(
       const query = `
             UPDATE projects 
             SET 
-                client_id = $1, department_id = $2, name = $3, summary = $4, 
-                status = $5, start_date = $6, deadline = $7, budget = $8,
-                estimated_hours = $9, estimated_days = $10, updated_at = NOW()
-            WHERE id = $11
+                client_id = $1, department_id = $2, category_id = $3, name = $4, summary = $5, description = $6,
+                status = $7, start_date = $8, deadline = $9, budget = $10,
+                estimated_hours = $11, estimated_days = $12, is_public_gantt = $13,
+                is_public_task_board = $14, requires_admin_approval = $15, send_to_client = $16, updated_at = NOW()
+            WHERE id = $17
             RETURNING *
         `;
       const result = await pool.query(query, [
         client_id || null,
         department_id || null,
+        category_id || null,
         name,
-        summary,
-        status,
+        summary || null,
+        description || null,
+        status || "Not Started",
         start_date || null,
         deadline || null,
         budget || 0,
         estimated_hours || null,
         estimated_days || null,
+        is_public_gantt || false,
+        is_public_task_board || false,
+        requires_admin_approval || false,
+        send_to_client || false,
         id,
       ]);
       res.json(result.rows[0]);

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, DollarSign, ArrowRight, Loader2, FileSignature, CalendarIcon, Building2, X } from "lucide-react";
-import { useNotification } from "@/components/NotificationProvider";
+import { Plus, Search, IndianRupee, ArrowRight, Loader2, FileSignature, CalendarIcon, Building2, X } from "lucide-react";
+import { useNotification } from "@/components/useNotification";
 import { Input } from "@/components/ui/input";
 
 import {
@@ -249,7 +249,7 @@ const Contracts: React.FC = () => {
                                             <span>{contract.client_name}</span>
                                         </div>
                                          <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
-                                            <DollarSign size={16} className="text-green-500" />
+                                            <IndianRupee size={16} className="text-green-500" />
                                             <span>{Number(contract.contract_value).toLocaleString()}</span>
                                         </div>
                                     </div>
@@ -347,7 +347,7 @@ const Contracts: React.FC = () => {
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Contract Number <span className="text-red-500">*</span></Label>
                                         <Input
-                                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 focus-visible:ring-indigo-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                                             placeholder="e.g. CTR-2024-001"
                                             value={newContract.contract_number}
                                             onChange={(e) => setNewContract({ ...newContract, contract_number: e.target.value })}
@@ -357,7 +357,7 @@ const Contracts: React.FC = () => {
                                         <div className="space-y-2">
                                             <Label className="text-slate-700 dark:text-slate-300 font-medium">Project <span className="text-red-500">*</span></Label>
                                             <Select value={newContract.project_id} onValueChange={(val) => setNewContract({ ...newContract, project_id: val })}>
-                                                <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white">
+                                                <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                                     <SelectValue placeholder="Select Project" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -372,7 +372,7 @@ const Contracts: React.FC = () => {
                                         <div className="space-y-2">
                                             <Label className="text-slate-700 dark:text-slate-300 font-medium">Client <span className="text-red-500">*</span></Label>
                                             <Select value={newContract.client_id} onValueChange={(val) => setNewContract({ ...newContract, client_id: val })}>
-                                                <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white">
+                                                <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                                     <SelectValue placeholder="Select Client" />
                                                 </SelectTrigger>
                                                 <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -399,7 +399,7 @@ const Contracts: React.FC = () => {
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Contract Type</Label>
                                         <Select value={newContract.contract_type} onValueChange={(val) => setNewContract({ ...newContract, contract_type: val })}>
-                                            <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white">
+                                            <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                                 <SelectValue placeholder="Select Type" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -414,13 +414,26 @@ const Contracts: React.FC = () => {
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Contract Value</Label>
                                         <div className="relative">
-                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                             <Input
                                                 type="number"
-                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                                min="0"
+                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 placeholder="0.00"
-                                                value={newContract.contract_value}
-                                                onChange={(e) => setNewContract({ ...newContract, contract_value: Number(e.target.value) })}
+                                                value={newContract.contract_value === 0 ? "" : newContract.contract_value}
+                                                onFocus={() => {
+                                                    if (newContract.contract_value === 0) setNewContract({ ...newContract, contract_value: "" as unknown as number });
+                                                }}
+                                                onBlur={() => {
+                                                    if (!newContract.contract_value) setNewContract({ ...newContract, contract_value: 0 });
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                }}
+                                                onChange={(e) => {
+                                                    const val = e.target.value === "" ? 0 : Number(e.target.value);
+                                                    if (val >= 0) setNewContract({ ...newContract, contract_value: val });
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -443,7 +456,7 @@ const Contracts: React.FC = () => {
                                                     <Button
                                                         variant={"outline"}
                                                         className={cn(
-                                                            "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white",
+                                                            "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none",
                                                             !newContract.start_date && "text-muted-foreground",
                                                             newContract.start_date && "pr-10"
                                                         )}
@@ -500,7 +513,7 @@ const Contracts: React.FC = () => {
                                                     <Button
                                                         variant={"outline"}
                                                         className={cn(
-                                                            "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed",
+                                                            "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none",
                                                             !newContract.end_date && "text-muted-foreground",
                                                             newContract.end_date && "pr-10"
                                                         )}
@@ -546,10 +559,10 @@ const Contracts: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="space-y-2 pt-2">
+                                <div className="space-y-2 pt-2 mb-4">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Contract Summary</Label>
                                     <Textarea
-                                        className="min-h-[120px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 resize-none focus-visible:ring-indigo-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                        className="min-h-[120px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                                         placeholder="Enter a brief summary of the contract scope and objectives..."
                                         value={newContract.description}
                                         onChange={(e) => setNewContract({ ...newContract, description: e.target.value })}

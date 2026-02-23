@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 
 import {
   Package,
@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Plus
 } from 'lucide-react';
-import { useNotification } from "@/components/NotificationProvider";
+import { useNotification } from "@/components/useNotification";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

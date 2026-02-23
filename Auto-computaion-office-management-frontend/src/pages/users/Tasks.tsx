@@ -1,5 +1,5 @@
-import React, { useState, useEffect, type ChangeEvent } from "react";
-import { useNotification } from "../../components/NotificationProvider";
+﻿import React, { useState, useEffect, type ChangeEvent } from "react";
+import { useNotification } from "../../components/useNotification";
 import {
   Table,
   TableBody,
@@ -61,7 +61,7 @@ const Tasks = () => {
   const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
   // --- Fetch Tasks ---
-  const fetchTasks = async () => {
+  const fetchTasks = React.useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/employee/tasks/all`, {
         credentials: "include",
@@ -70,7 +70,7 @@ const Tasks = () => {
       const data = await response.json();
 
       // Map backend fields to frontend types
-      const mappedTasks = data.tasks.map((t: any) => ({
+      const mappedTasks = data.tasks.map((t: Record<string, string>) => ({
         id: t.id,
         title: t.title,
         project: t.project_name || "General",
@@ -83,11 +83,11 @@ const Tasks = () => {
       console.error(error);
       showError("Failed to load tasks");
     }
-  };
+  }, [API_BASE_URL, showError, setTasks]);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   // --- Filter States ---
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
@@ -104,7 +104,7 @@ const Tasks = () => {
   const pendingTasks = tasks.filter((t) => t.status === "Pending").length;
 
   // --- Actions ---
-  const handleDeleteTask = async (_taskId: string) => {
+  const handleDeleteTask = async () => {
     // NOTE: User requested specific endpoints for updates but didn't specify Delete.
     // Assuming handled by admin or future implementation. For now, client-side only or disable?
     // Keeping client-side delete visually as placeholder or remove strictly?
@@ -121,7 +121,7 @@ const Tasks = () => {
 
   const confirmDelete = () => {
     if (taskToDelete) {
-      handleDeleteTask(taskToDelete);
+      handleDeleteTask();
     }
   };
 

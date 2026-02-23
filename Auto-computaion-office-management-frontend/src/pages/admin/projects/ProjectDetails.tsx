@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Calendar as CalendarIcon, CheckCircle, DollarSign, FileText, Plus, Target } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, CheckCircle, IndianRupee, FileText, Plus, Target } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useNotification } from "@/components/NotificationProvider";
+import { useNotification } from "@/components/useNotification";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -57,9 +57,105 @@ interface Project {
     milestones: Milestone[];
     expenses: Expense[];
     invoices: Invoice[];
+    category?: string;
+    department?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Dummy Data for fallback
+const dummyProjects: Project[] = [
+    {
+        id: 1,
+        name: "Website Redesign",
+        status: "In Progress",
+        deadline: "2024-12-31",
+        description: "Revamp the corporate website with new branding and improved UX.",
+        client_name: "Acme Corp",
+        estimated_budget: 15000,
+        actual_cost: 4500,
+        category: "Web Development",
+        department: "Design",
+        milestones: [
+            { id: 1, name: "Design Mockups", due_date: "2024-06-15", status: "Completed" },
+            { id: 2, name: "Frontend Development", due_date: "2024-08-01", status: "Pending" },
+            { id: 3, name: "Backend Integration", due_date: "2024-09-15", status: "Pending" },
+            { id: 4, name: "UAT Testing", due_date: "2024-11-01", status: "Pending" }
+        ],
+        expenses: [
+            { id: 1, title: "Stock Photos", amount: 500, category: "Assets", incurred_date: "2024-05-20" },
+            { id: 2, title: "Figma License", amount: 4000, category: "Software", incurred_date: "2024-01-10" }
+        ],
+        invoices: [
+            { id: 1, invoice_number: "INV-001", amount: 5000, due_date: "2024-05-01", status: "Paid" }
+        ]
+    },
+    {
+        id: 2,
+        name: "Mobile App Development",
+        status: "On Hold",
+        deadline: "2024-10-15",
+        description: "iOS and Android app for customer loyalty program.",
+        client_name: "RetailPlus",
+        estimated_budget: 25000,
+        actual_cost: 12000,
+        category: "Mobile App",
+        department: "Engineering",
+        milestones: [],
+        expenses: [],
+        invoices: []
+    },
+    {
+        id: 3,
+        name: "Marketing Campaign Q4",
+        status: "Not Started",
+        deadline: "2024-11-01",
+        description: "Social media and email marketing strategy for holiday season.",
+        client_name: "Internal",
+        estimated_budget: 5000,
+        actual_cost: 0,
+        category: "Marketing",
+        department: "Marketing",
+        milestones: [],
+        expenses: [],
+        invoices: []
+    },
+    {
+        id: 4,
+        name: "Internal HR Portal",
+        status: "Completed",
+        deadline: "2024-08-30",
+        description: "Employee self-service portal for leave and benefits.",
+        client_name: "Internal",
+        estimated_budget: 8000,
+        actual_cost: 7800,
+        category: "Web Development",
+        department: "HR",
+         milestones: [
+            { id: 1, name: "Requirements Gathering", due_date: "2024-02-01", status: "Completed" },
+            { id: 2, name: "Development", due_date: "2024-05-01", status: "Completed" },
+            { id: 3, name: "Testing", due_date: "2024-07-01", status: "Completed" },
+            { id: 4, name: "Deployment", due_date: "2024-08-15", status: "Completed" }
+        ],
+        expenses: [],
+        invoices: []
+    },
+    {
+        id: 5,
+        name: "SEO Optimization",
+        status: "In Progress",
+        deadline: "2024-09-30",
+        description: "Improve search engine ranking for main product pages.",
+        client_name: "TechStart",
+        estimated_budget: 3000,
+        actual_cost: 1500,
+        category: "SEO",
+        department: "Marketing",
+        milestones: [],
+        expenses: [],
+        invoices: []
+    }
+];
 
 const ProjectDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -81,101 +177,8 @@ const ProjectDetails: React.FC = () => {
     const [isExpenseDateOpen, setIsExpenseDateOpen] = useState(false);
     const [isInvoiceDateOpen, setIsInvoiceDateOpen] = useState(false);
 
-    // Dummy Data for fallback
-    const dummyProjects = [
-        {
-            id: 1,
-            name: "Website Redesign",
-            status: "In Progress",
-            deadline: "2024-12-31",
-            description: "Revamp the corporate website with new branding and improved UX.",
-            client_name: "Acme Corp",
-            estimated_budget: 15000,
-            actual_cost: 4500,
-            category: "Web Development",
-            department: "Design",
-            milestones: [
-                { id: 1, name: "Design Mockups", due_date: "2024-06-15", status: "Completed" },
-                { id: 2, name: "Frontend Development", due_date: "2024-08-01", status: "Pending" },
-                { id: 3, name: "Backend Integration", due_date: "2024-09-15", status: "Pending" },
-                { id: 4, name: "UAT Testing", due_date: "2024-11-01", status: "Pending" }
-            ],
-            expenses: [
-                { id: 1, title: "Stock Photos", amount: 500, category: "Assets", incurred_date: "2024-05-20" },
-                { id: 2, title: "Figma License", amount: 4000, category: "Software", incurred_date: "2024-01-10" }
-            ],
-            invoices: [
-                { id: 1, invoice_number: "INV-001", amount: 5000, due_date: "2024-05-01", status: "Paid" }
-            ]
-        },
-        {
-            id: 2,
-            name: "Mobile App Development",
-            status: "On Hold",
-            deadline: "2024-10-15",
-            description: "iOS and Android app for customer loyalty program.",
-            client_name: "RetailPlus",
-            estimated_budget: 25000,
-            actual_cost: 12000,
-            category: "Mobile App",
-            department: "Engineering",
-            milestones: [],
-            expenses: [],
-            invoices: []
-        },
-        {
-            id: 3,
-            name: "Marketing Campaign Q4",
-            status: "Not Started",
-            deadline: "2024-11-01",
-            description: "Social media and email marketing strategy for holiday season.",
-            client_name: "Internal",
-            estimated_budget: 5000,
-            actual_cost: 0,
-            category: "Marketing",
-            department: "Marketing",
-            milestones: [],
-            expenses: [],
-            invoices: []
-        },
-        {
-            id: 4,
-            name: "Internal HR Portal",
-            status: "Completed",
-            deadline: "2024-08-30",
-            description: "Employee self-service portal for leave and benefits.",
-            client_name: "Internal",
-            estimated_budget: 8000,
-            actual_cost: 7800,
-            category: "Web Development",
-            department: "HR",
-             milestones: [
-                { id: 1, name: "Requirements Gathering", due_date: "2024-02-01", status: "Completed" },
-                { id: 2, name: "Development", due_date: "2024-05-01", status: "Completed" },
-                { id: 3, name: "Testing", due_date: "2024-07-01", status: "Completed" },
-                { id: 4, name: "Deployment", due_date: "2024-08-15", status: "Completed" }
-            ],
-            expenses: [],
-            invoices: []
-        },
-        {
-            id: 5,
-            name: "SEO Optimization",
-            status: "In Progress",
-            deadline: "2024-09-30",
-            description: "Improve search engine ranking for main product pages.",
-            client_name: "TechStart",
-            estimated_budget: 3000,
-            actual_cost: 1500,
-            category: "SEO",
-            department: "Marketing",
-            milestones: [],
-            expenses: [],
-            invoices: []
-        }
-    ];
 
-    const fetchProjectDetails = async () => {
+    const fetchProjectDetails = React.useCallback(async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/admin/projects/${id}`, { credentials: "include" });
             if (res.ok) {
@@ -190,7 +193,8 @@ const ProjectDetails: React.FC = () => {
                     console.log("Serving dummy project data");
                 } else {
                     showError("Failed to fetch project details");
-                    navigate("/admin/projects");
+                    const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+                    navigate(`${basePath}/projects`);
                 }
             }
         } catch (error) {
@@ -203,11 +207,11 @@ const ProjectDetails: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [id, showError, navigate]);
 
     useEffect(() => {
         if (id) fetchProjectDetails();
-    }, [id]);
+    }, [id, fetchProjectDetails]);
 
     const handleAddMilestone = async () => {
         try {
@@ -277,7 +281,10 @@ const ProjectDetails: React.FC = () => {
         <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 px-6 lg:p-10 animate-in fade-in duration-500">
              {/* Header */}
             <div className="mb-6">
-                <Button variant="ghost" onClick={() => navigate("/admin/projects")} className="pl-0 mb-4 hover:bg-transparent hover:text-blue-600">
+                <Button variant="ghost" onClick={() => {
+                    const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+                    navigate(`${basePath}/projects`);
+                }} className="pl-0 mb-4 hover:bg-transparent hover:text-blue-600">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
                 </Button>
                 <div className="flex justify-between items-start">
@@ -310,7 +317,7 @@ const ProjectDetails: React.FC = () => {
                  <Card className="p-6">
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-sm text-slate-500 font-medium">Budget Usage</span>
-                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <IndianRupee className="h-4 w-4 text-green-500" />
                     </div>
                     <div className="flex justify-between items-end mb-2">
                         <div className="text-2xl font-bold">₹{Number(project.actual_cost).toLocaleString()}</div>
@@ -374,7 +381,7 @@ const ProjectDetails: React.FC = () => {
                     {/* Expenses Section */}
                     <div>
                          <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold flex items-center gap-2"><DollarSign className="h-5 w-5" /> Expenses</h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><IndianRupee className="h-5 w-5" /> Expenses</h3>
                             <Button size="sm" variant="outline" onClick={() => setIsExpenseModalOpen(true)}>
                                 <Plus className="mr-2 h-4 w-4" /> Log Expense
                             </Button>

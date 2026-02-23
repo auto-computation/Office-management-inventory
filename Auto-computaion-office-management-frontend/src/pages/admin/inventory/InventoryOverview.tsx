@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Package, Warehouse, Truck, AlertTriangle, IndianRupee } from "lucide-react";
-import { useNotification } from "@/components/NotificationProvider";
+import { useNotification } from "@/components/useNotification";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 

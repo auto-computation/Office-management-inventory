@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FileText, CheckCircle, XCircle, Calendar, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 

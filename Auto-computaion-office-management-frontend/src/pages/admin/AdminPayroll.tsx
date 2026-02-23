@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, Filter, Search, DollarSign, Send, CheckCircle2, Clock, X, ChevronLeft, ChevronRight, Loader2, ChevronDown, Eye } from "lucide-react";
@@ -18,7 +18,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 

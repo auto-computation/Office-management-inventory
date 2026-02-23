@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   User,
   Mail,
@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "@/hooks/use-theme";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 import { useUser } from "../../components/UserProvider";
 
 const Settings: React.FC = () => {

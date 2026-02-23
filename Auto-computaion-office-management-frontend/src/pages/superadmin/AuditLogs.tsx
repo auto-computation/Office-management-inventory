@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import {
     Card,
     CardHeader,
@@ -22,7 +22,7 @@ import {
     ShieldAlert,
     RefreshCw,
 } from "lucide-react";
-import { useNotification } from "@/components/NotificationProvider";
+import { useNotification } from "@/components/useNotification";
 
 interface AuditLog {
     id: number;

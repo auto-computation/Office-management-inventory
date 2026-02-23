@@ -1,6 +1,6 @@
-import React, { useState, type FormEvent } from "react";
+﻿import React, { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 

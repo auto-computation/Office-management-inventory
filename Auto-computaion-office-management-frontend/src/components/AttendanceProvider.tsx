@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   createContext,
   useContext,
   useState,
@@ -6,7 +6,7 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import { useNotification } from "@/components/NotificationProvider";
+import { useNotification } from "@/components/useNotification";
 
 // Define the shape of the context
 export interface AttendanceContextType {

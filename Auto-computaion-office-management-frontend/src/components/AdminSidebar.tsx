@@ -98,14 +98,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
 }) => {
   const API_BASE_URL = import.meta.env.VITE_BASE_URL;
   const { user: contextUser } = useUser();
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<Record<string, unknown> | null>(null);
   const navigate = useNavigate();
   const location = useLocation(); // Hook for current location
   const [expanded, setExpanded] = useState(true);
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
-    "HR": true,
-    "Inventory": true
-  });
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
 
   // Auto-close mobile menu on resize
   useEffect(() => {
@@ -133,7 +130,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
     fetchMyData();
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [API_BASE_URL, setMobileOpen]);
 
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -147,7 +144,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         if (res.ok) {
           const data = await res.json();
           const totalUnread = data.reduce(
-            (acc: number, chat: any) => acc + (chat.unread || 0),
+            (acc: number, chat: { unread?: number }) => acc + (chat.unread || 0),
             0
           );
           setUnreadCount(totalUnread);
@@ -417,10 +414,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 }`}
             >
               <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                {userData ? userData.name : "Admin User"}
+                {userData ? String(userData.name) : "Admin User"}
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-500 truncate">
-                {userData?.designation || "Administrator"}
+                {userData?.designation ? String(userData.designation) : "Administrator"}
               </span>
             </div>
             {isExpandedVisual && (

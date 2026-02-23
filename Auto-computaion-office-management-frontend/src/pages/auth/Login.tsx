@@ -1,11 +1,11 @@
-import {
+﻿import {
   useEffect,
   useState,
   type ChangeEvent,
   type FormEvent,
 } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 
 interface FormValues {
   email: string;

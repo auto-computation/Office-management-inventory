@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNotification } from "../../components/NotificationProvider";
+﻿import React, { useState, useEffect } from "react";
+import { useNotification } from "../../components/useNotification";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Mail, Phone, MapPin, X, Eye, Calendar, Briefcase, Clock } from "lucide-react";

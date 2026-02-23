@@ -75,6 +75,11 @@ const navItems: NavItem[] = [
       ]
   },
   { label: "Projects", to: "/super-admin/projects", icon: <Folder size={20} /> },
+    {
+    label: "Contracts",
+    to: "/super-admin/contracts",
+    icon: <FileSignature size={20} />,
+  },
   { label: "Tasks", to: "/super-admin/tasks", icon: <CheckSquare size={20} /> },
   {
       label: "HR",
@@ -111,36 +116,19 @@ const navItems: NavItem[] = [
     to: "/super-admin/settings",
     icon: <Settings size={20} />,
   },
-  {
-    label: "Past Employees",
-    to: "/super-admin/past-employees",
-    icon: <Clock size={20} />,
-  },
+
   {
     label: "Allowed Ips",
     to: "/super-admin/allowed-ips",
     icon: <Shield size={20} />,
   },
-  {
-    label: "Inventory",
-    to: "/super-admin/inventory",
-    icon: <Package size={20} />,
-  },
-  {
-    label: "Projects",
-    to: "/super-admin/projects",
-    icon: <Folder size={20} />,
-  },
+
   {
     label: "Audit Logs",
     to: "/super-admin/audit-logs",
     icon: <Calendar size={20} />,
   },
-  {
-    label: "Contracts",
-    to: "/super-admin/contracts",
-    icon: <FileSignature size={20} />,
-  },
+
 ];
 
 interface SuperAdminSidebarProps {
@@ -158,11 +146,7 @@ const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState(true);
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
-      "HR": true,
-      "Admin Management": true,
-      "Inventory": true
-  });
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
 
   // Auto-close mobile menu on resize
   useEffect(() => {
@@ -190,7 +174,7 @@ const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
     fetchMyData();
 
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [API_BASE_URL, setMobileOpen]);
 
   const [unreadCount, setUnreadCount] = useState(0);
 

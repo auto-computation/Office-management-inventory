@@ -75,37 +75,39 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       const {
-        contract_name,
+        contract_number,
         project_id,
         client_id,
         description,
         start_date,
         end_date,
         contract_type,
-        value,
+        contract_value,
+        status,
       } = req.body;
 
-      if (!contract_name) {
-        return res.status(400).json({ message: "Contract name is required" });
+      if (!contract_number) {
+        return res.status(400).json({ message: "Contract number is required" });
       }
 
       const query = `
         INSERT INTO contracts (
-            contract_name, project_id, client_id, description, 
-            start_date, end_date, contract_type, value
+            contract_number, project_id, client_id, description, 
+            start_date, end_date, contract_type, contract_value, status
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `;
       const result = await pool.query(query, [
-        contract_name,
+        contract_number,
         project_id || null,
         client_id || null,
         description,
         start_date || null,
         end_date || null,
         contract_type,
-        value || 0,
+        contract_value || 0,
+        status || "Active",
       ]);
       res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -124,34 +126,36 @@ router.put(
     try {
       const { id } = req.params;
       const {
-        contract_name,
+        contract_number,
         project_id,
         client_id,
         description,
         start_date,
         end_date,
         contract_type,
-        value,
+        contract_value,
+        status,
       } = req.body;
 
       const query = `
         UPDATE contracts 
         SET 
-            contract_name = $1, project_id = $2, client_id = $3, description = $4,
-            start_date = $5, end_date = $6, contract_type = $7, value = $8,
+            contract_number = $1, project_id = $2, client_id = $3, description = $4,
+            start_date = $5, end_date = $6, contract_type = $7, contract_value = $8, status = $9,
             updated_at = NOW()
-        WHERE id = $9
+        WHERE id = $10
         RETURNING *
       `;
       const result = await pool.query(query, [
-        contract_name,
+        contract_number,
         project_id || null,
         client_id || null,
         description,
         start_date || null,
         end_date || null,
         contract_type,
-        value || 0,
+        contract_value || 0,
+        status || "Active",
         id,
       ]);
 

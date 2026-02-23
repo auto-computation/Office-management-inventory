@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
     Table,
     TableBody,
@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, ShieldAlert, Loader2, Network } from "lucide-react";
-import { useNotification } from "../../components/NotificationProvider"; // Assuming this path based on other files
+import { useNotification } from "../../components/useNotification"; // Assuming this path based on other files
 import { format } from "date-fns";
 
 // --- Types ---

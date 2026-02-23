@@ -1,11 +1,11 @@
-
+﻿
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { OtpInput } from '@/components/ui/otp-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ShieldCheck } from 'lucide-react';
-import { useNotification } from '@/components/NotificationProvider';
+import { useNotification } from '@/components/useNotification';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 

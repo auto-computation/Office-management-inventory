@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import {
   Search,
@@ -37,7 +37,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNotification } from "../../components/NotificationProvider";
+import { useNotification } from "../../components/useNotification";
 import { io } from "socket.io-client";
 
 // --- Types ---
@@ -123,7 +123,6 @@ const COMMON_EMOJIS = [
   "😒",
   "😞",
   "😔",
-  "ww",
   "😕",
   "🙁",
   "☹️",
@@ -143,7 +142,6 @@ const COMMON_EMOJIS = [
   "🥵",
   "🥶",
   "😱",
-  "mw",
   "😨",
   "🤔",
   "🤗",

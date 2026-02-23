@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, DollarSign, Users, ArrowRight, Loader2, Folder, Target, FileText, IndianRupee, X, Calendar as CalendarIcon } from "lucide-react";
-import { useNotification } from "@/components/NotificationProvider";
+import { Plus, Search, Users, ArrowRight, Loader2, Folder, Target, FileText, IndianRupee, X, Calendar as CalendarIcon } from "lucide-react";
+import { useNotification } from "@/components/useNotification";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,10 +24,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -120,8 +116,6 @@ const ProjectsDashboard: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isStartDateOpen, setIsStartDateOpen] = useState(false);
-    const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
     // Form
     const [newProject, setNewProject] = useState({
@@ -275,7 +269,7 @@ const ProjectsDashboard: React.FC = () => {
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Projects</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">Track projects, milestones, and financials.</p>
                 </div>
-                 <Button onClick={() => setIsAddModalOpen(true)} className="bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+                 <Button onClick={() => setIsAddModalOpen(true)} className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:cursor-pointer">
                     <Plus className="mr-2 h-4 w-4" /> New Project
                 </Button>
             </div>
@@ -296,7 +290,10 @@ const ProjectsDashboard: React.FC = () => {
                     {filteredProjects.map((project) => (
                         <Card 
                             key={project.id} 
-                            onClick={() => navigate(`/admin/projects/${project.id}`)}
+                            onClick={() => {
+                                const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+                                navigate(`${basePath}/projects/${project.id}`);
+                            }}
                             className="group relative cursor-pointer hover:shadow-lg transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 overflow-hidden"
                         >
                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -322,7 +319,7 @@ const ProjectsDashboard: React.FC = () => {
                                         <span>{project.client_name || "Internal"}</span>
                                     </div>
                                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                                        <DollarSign size={16} className="text-green-500" />
+                                        <IndianRupee size={16} className="text-green-500" />
                                         <span>{Number(project.estimated_budget).toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -365,7 +362,7 @@ const ProjectsDashboard: React.FC = () => {
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Project Name <span className="text-red-500">*</span></Label>
                                         <Input
-                                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 focus-visible:ring-blue-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                            className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                                             placeholder="Enter project name"
                                             value={newProject.name}
                                             onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
@@ -380,7 +377,7 @@ const ProjectsDashboard: React.FC = () => {
                                                         <Button
                                                             variant={"outline"}
                                                             className={cn(
-                                                                "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white",
+                                                                "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none",
                                                                 !newProject.start_date && "text-muted-foreground",
                                                                 newProject.start_date && "pr-10"
                                                             )}
@@ -438,7 +435,7 @@ const ProjectsDashboard: React.FC = () => {
                                                         <Button
                                                             variant={"outline"}
                                                             className={cn(
-                                                                "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed",
+                                                                "w-full h-11 justify-start text-left font-normal bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none",
                                                                 !newProject.deadline && "text-muted-foreground",
                                                                 newProject.deadline && "pr-10"
                                                             )}
@@ -494,7 +491,7 @@ const ProjectsDashboard: React.FC = () => {
                                 <div className="space-y-2">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Project Category</Label>
                                     <Select value={newProject.category} onValueChange={(val) => setNewProject({ ...newProject, category: val })}>
-                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white">
+                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                             <SelectValue placeholder="Select Category" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -509,7 +506,7 @@ const ProjectsDashboard: React.FC = () => {
                                 <div className="space-y-2">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Department</Label>
                                     <Select value={newProject.department} onValueChange={(val) => setNewProject({ ...newProject, department: val })}>
-                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white">
+                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                             <SelectValue placeholder="Select Department" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -524,7 +521,7 @@ const ProjectsDashboard: React.FC = () => {
                                 <div className="space-y-2">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Client</Label>
                                     <Select value={newProject.client_id} onValueChange={(val) => setNewProject({ ...newProject, client_id: val })}>
-                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white">
+                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                             <SelectValue placeholder="Select Client" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
@@ -545,7 +542,7 @@ const ProjectsDashboard: React.FC = () => {
                             <div className="space-y-2">
                                 <Label className="text-slate-700 dark:text-slate-300 font-medium">Project Summary</Label>
                                 <Textarea
-                                    className="min-h-[120px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 resize-none focus-visible:ring-blue-500 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                    className="min-h-[120px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                                     placeholder="Enter a brief summary of the project scope and objectives..."
                                     value={newProject.summary}
                                     onChange={(e) => setNewProject({ ...newProject, summary: e.target.value })}
@@ -610,7 +607,7 @@ const ProjectsDashboard: React.FC = () => {
                                                 }
                                             }}
                                         >
-                                            <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white">
+                                            <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                                 <SelectValue placeholder="Select Members" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -689,17 +686,30 @@ const ProjectsDashboard: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-2 gap-6 mb-4">
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Project Budget</Label>
                                         <div className="relative">
                                             <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                             <Input
                                                 type="number"
-                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                                min="0"
+                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 placeholder="0.00"
-                                                value={newProject.budget}
-                                                onChange={(e) => setNewProject({ ...newProject, budget: Number(e.target.value) })}
+                                                value={newProject.budget === 0 ? "" : newProject.budget}
+                                                onFocus={() => {
+                                                    if (newProject.budget === 0) setNewProject({ ...newProject, budget: "" as unknown as number });
+                                                }}
+                                                onBlur={() => {
+                                                    if (!newProject.budget) setNewProject({ ...newProject, budget: 0 });
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                }}
+                                                onChange={(e) => {
+                                                    const val = e.target.value === "" ? 0 : Number(e.target.value);
+                                                    if (val >= 0) setNewProject({ ...newProject, budget: val });
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -709,10 +719,23 @@ const ProjectsDashboard: React.FC = () => {
                                             <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                             <Input
                                                 type="number"
-                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400"
+                                                min="0"
+                                                className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11 text-slate-900 dark:text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 placeholder="e.g. 120"
-                                                value={newProject.hours_estimate}
-                                                onChange={(e) => setNewProject({ ...newProject, hours_estimate: Number(e.target.value) })}
+                                                value={newProject.hours_estimate === 0 ? "" : newProject.hours_estimate}
+                                                onFocus={() => {
+                                                    if (newProject.hours_estimate === 0) setNewProject({ ...newProject, hours_estimate: "" as unknown as number });
+                                                }}
+                                                onBlur={() => {
+                                                    if (!newProject.hours_estimate) setNewProject({ ...newProject, hours_estimate: 0 });
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                                                }}
+                                                onChange={(e) => {
+                                                    const val = e.target.value === "" ? 0 : Number(e.target.value);
+                                                    if (val >= 0) setNewProject({ ...newProject, hours_estimate: val });
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -737,11 +760,11 @@ const ProjectsDashboard: React.FC = () => {
                             </label>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="px-6 h-11 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium">Cancel</Button>
+                            <Button variant="outline" onClick={() => setIsAddModalOpen(false)} className="px-6 h-11 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium hover:cursor-pointer">Cancel</Button>
                             <Button 
                                 onClick={handleCreateProject} 
                                 disabled={isSubmitting}
-                                className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 px-8 h-11 font-medium shadow-lg shadow-blue-500/20"
+                                className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 px-8 h-11 font-medium shadow-lg shadow-blue-500/20 hover:cursor-pointer"
                             >
                                 {isSubmitting ? (
                                     <>

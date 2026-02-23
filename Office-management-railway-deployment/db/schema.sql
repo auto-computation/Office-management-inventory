@@ -128,12 +128,21 @@ CREATE TABLE clients (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE project_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     department_id INT REFERENCES departments(id) ON DELETE SET NULL,
+    category_id INT REFERENCES project_categories(id) ON DELETE SET NULL,
     client_id INT REFERENCES clients(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     summary TEXT,
+    description TEXT,
     status VARCHAR(50) DEFAULT 'Not Started',
     start_date DATE,
     deadline DATE,
@@ -141,6 +150,10 @@ CREATE TABLE projects (
     estimated_hours NUMERIC(10, 2),
     estimated_days NUMERIC(10, 2),
     actual_cost NUMERIC(15, 2) DEFAULT 0.00, -- From expenses
+    is_public_gantt BOOLEAN DEFAULT FALSE,
+    is_public_task_board BOOLEAN DEFAULT FALSE,
+    requires_admin_approval BOOLEAN DEFAULT FALSE,
+    send_to_client BOOLEAN DEFAULT FALSE,
     created_by INT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -148,14 +161,15 @@ CREATE TABLE projects (
 
 CREATE TABLE contracts (
     id SERIAL PRIMARY KEY,
-    contract_name VARCHAR(255) NOT NULL,
+    contract_number VARCHAR(255) NOT NULL,
     project_id INT REFERENCES projects(id) ON DELETE SET NULL,
     client_id INT REFERENCES clients(id) ON DELETE SET NULL,
     description TEXT,
     start_date DATE,
     end_date DATE,
     contract_type VARCHAR(100),
-    value NUMERIC(15, 2) DEFAULT 0.00,
+    contract_value NUMERIC(15, 2) DEFAULT 0.00,
+    status VARCHAR(50) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

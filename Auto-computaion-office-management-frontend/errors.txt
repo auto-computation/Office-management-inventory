@@ -1,0 +1,30 @@
+﻿src/pages/admin/projects/ProjectDetails.tsx(188,32): error TS2345: Argument of type '{ id: number; name: string; status: string; deadline: string; description: string; client_name: string; estimated_budget: number; actual_cost: number; category: string; department: string; milestones: { ...; }[]; expenses: { ...; }[]; invoices: { ...; }[]; }' is not assignable to parameter of type 'SetStateAction<Project | null>'.
+  Type '{ id: number; name: string; status: string; deadline: string; description: string; client_name: string; estimated_budget: number; actual_cost: number; category: string; department: string; milestones: { ...; }[]; expenses: { ...; }[]; invoices: { ...; }[]; }' is not assignable to type 'Project'.
+    Types of property 'invoices' are incompatible.
+      Type '{ id: number; invoice_number: string; amount: number; due_date: string; status: string; }[]' is not assignable to type 'Invoice[]'.
+        Type '{ id: number; invoice_number: string; amount: number; due_date: string; status: string; }' is not assignable to type 'Invoice'.
+          Types of property 'status' are incompatible.
+            Type 'string' is not assignable to type '"Unpaid" | "Paid" | "Overdue"'.
+src/pages/admin/projects/ProjectDetails.tsx(201,29): error TS2345: Argument of type '{ id: number; name: string; status: string; deadline: string; description: string; client_name: string; estimated_budget: number; actual_cost: number; category: string; department: string; milestones: { ...; }[]; expenses: { ...; }[]; invoices: { ...; }[]; }' is not assignable to parameter of type 'SetStateAction<Project | null>'.
+  Type '{ id: number; name: string; status: string; deadline: string; description: string; client_name: string; estimated_budget: number; actual_cost: number; category: string; department: string; milestones: { ...; }[]; expenses: { ...; }[]; invoices: { ...; }[]; }' is not assignable to type 'Project'.
+    Types of property 'invoices' are incompatible.
+      Type '{ id: number; invoice_number: string; amount: number; due_date: string; status: string; }[]' is not assignable to type 'Invoice[]'.
+        Type '{ id: number; invoice_number: string; amount: number; due_date: string; status: string; }' is not assignable to type 'Invoice'.
+          Types of property 'status' are incompatible.
+            Type 'string' is not assignable to type '"Unpaid" | "Paid" | "Overdue"'.
+src/pages/admin/projects/ProjectsDashboard.tsx(4,118): error TS2300: Duplicate identifier 'CalendarIcon'.
+src/pages/admin/projects/ProjectsDashboard.tsx(7,10): error TS2300: Duplicate identifier 'format'.
+src/pages/admin/projects/ProjectsDashboard.tsx(8,10): error TS2300: Duplicate identifier 'Calendar'.
+src/pages/admin/projects/ProjectsDashboard.tsx(9,10): error TS2300: Duplicate identifier 'Popover'.
+src/pages/admin/projects/ProjectsDashboard.tsx(9,19): error TS2300: Duplicate identifier 'PopoverContent'.
+src/pages/admin/projects/ProjectsDashboard.tsx(9,35): error TS2300: Duplicate identifier 'PopoverTrigger'.
+src/pages/admin/projects/ProjectsDashboard.tsx(27,10): error TS2300: Duplicate identifier 'format'.
+src/pages/admin/projects/ProjectsDashboard.tsx(28,10): error TS2300: Duplicate identifier 'CalendarIcon'.
+src/pages/admin/projects/ProjectsDashboard.tsx(29,10): error TS2300: Duplicate identifier 'Calendar'.
+src/pages/admin/projects/ProjectsDashboard.tsx(30,10): error TS2300: Duplicate identifier 'Popover'.
+src/pages/admin/projects/ProjectsDashboard.tsx(30,19): error TS2300: Duplicate identifier 'PopoverContent'.
+src/pages/admin/projects/ProjectsDashboard.tsx(30,35): error TS2300: Duplicate identifier 'PopoverTrigger'.
+src/pages/admin/projects/ProjectsDashboard.tsx(123,12): error TS6133: 'isStartDateOpen' is declared but its value is never read.
+src/pages/admin/projects/ProjectsDashboard.tsx(123,29): error TS6133: 'setIsStartDateOpen' is declared but its value is never read.
+src/pages/admin/projects/ProjectsDashboard.tsx(124,12): error TS6133: 'isDeadlineOpen' is declared but its value is never read.
+src/pages/admin/projects/ProjectsDashboard.tsx(124,28): error TS6133: 'setIsDeadlineOpen' is declared but its value is never read.
