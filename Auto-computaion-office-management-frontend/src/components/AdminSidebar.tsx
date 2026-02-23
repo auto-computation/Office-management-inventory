@@ -60,6 +60,7 @@ const navItems: NavItem[] = [
       ]
   },
   { label: "Projects", to: "/admin/projects", icon: <Folder size={20} /> },
+  { label: "Contracts", to: "/admin/contracts", icon: <FileText size={20} /> },
   { label: "Tasks", to: "/admin/tasks", icon: <CheckSquare size={20} /> },
   {
     label: "HR",
@@ -83,6 +84,7 @@ const navItems: NavItem[] = [
     to: "/admin/allowed-ips",
     icon: <Shield size={20} />,
   },
+
 ];
 
 interface AdminSidebarProps {
