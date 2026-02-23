@@ -48,10 +48,29 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
+export interface Product {
+    id: number;
+    name: string;
+    description?: string;
+    sku: string;
+    category: string;
+    unit_price: number | string;
+    reorder_level: number | string;
+    total_stock?: number | string;
+    stock_available?: number | string;
+    unit?: string;
+    image_url?: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+}
+
 const Products: React.FC = () => {
     const { showSuccess, showError } = useNotification();
     const [searchQuery, setSearchQuery] = useState("");
-    const [products, setProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState<{
         name: string;
@@ -69,19 +88,19 @@ const Products: React.FC = () => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
-    const [editingProduct, setEditingProduct] = useState<any | null>(null);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
     // Stock Adjustment Modal State
     const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
-    const [adjustingProduct, setAdjustingProduct] = useState<any | null>(null);
+    const [adjustingProduct, setAdjustingProduct] = useState<Product | null>(null);
     const [stockAdjustment, setStockAdjustment] = useState<{
         type: 'IN' | 'OUT';
         quantity: number | string;
         notes: string;
     }>({ type: 'OUT', quantity: '', notes: '' });
 
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [newCategory, setNewCategory] = useState("");
 
@@ -140,8 +159,8 @@ const Products: React.FC = () => {
             showSuccess("Category added successfully");
             setIsCategoryModalOpen(false);
             setNewCategory("");
-        } catch (err: any) {
-            showError(err.message);
+        } catch (err) {
+            showError(err instanceof Error ? err.message : "Failed to add category");
         }
     };
 
@@ -182,7 +201,7 @@ const Products: React.FC = () => {
         if (imageInputRef.current) imageInputRef.current.value = "";
     };
 
-    const handleEditProduct = (product: any) => {
+    const handleEditProduct = (product: Product) => {
         setEditingProduct(product);
         setNewProduct({
             name: product.name,
@@ -211,8 +230,8 @@ const Products: React.FC = () => {
             showSuccess("Product deleted successfully");
             setProductToDelete(null);
             fetchProducts();
-        } catch (error: any) {
-            showError(error.message);
+        } catch (error) {
+            showError(error instanceof Error ? error.message : "Failed to delete product");
         }
     };
 
@@ -283,8 +302,8 @@ const Products: React.FC = () => {
             setProductImage(null);
             setImagePreview(null);
             fetchProducts();
-        } catch (err: any) {
-            showError(err.message);
+        } catch (err) {
+            showError(err instanceof Error ? err.message : "Failed to save product");
         }
     };
 
@@ -299,6 +318,11 @@ const Products: React.FC = () => {
         }
 
         try {
+            if (!adjustingProduct) {
+                showError("No product selected for adjustment");
+                return;
+            }
+
             // Get main warehouse (we'll fetch it or default to ID 1 for simplicity of this UI. 
             // In a real multi-warehouse setup, the user would select the warehouse)
             const warehouseRes = await fetch(`${API_BASE_URL}/admin/inventory/warehouses`, { credentials: "include" });
@@ -328,8 +352,8 @@ const Products: React.FC = () => {
             setAdjustingProduct(null);
             setStockAdjustment({ type: 'OUT', quantity: '', notes: '' });
             fetchProducts();
-        } catch (err: any) {
-            showError(err.message);
+        } catch (err) {
+            showError(err instanceof Error ? err.message : "Failed to adjust stock");
         }
     };
 
@@ -379,7 +403,7 @@ const Products: React.FC = () => {
                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{product.sku}</p>
                                 </div>
                             </div>
-                            <Badge variant={Number(product.total_stock) <= product.reorder_level ? "destructive" : "outline"} className="dark:border-slate-700 dark:text-slate-300">
+                            <Badge variant={Number(product.total_stock) <= Number(product.reorder_level) ? "destructive" : "outline"} className="dark:border-slate-700 dark:text-slate-300">
                                 {Number(product.total_stock)} Instock
                             </Badge>
                         </div>
@@ -437,7 +461,7 @@ const Products: React.FC = () => {
                                 <TableCell className="text-slate-700 dark:text-slate-300 text-sm">{product.unit || "—"}</TableCell>
                                 <TableCell className="text-right font-semibold text-slate-900 dark:text-white">₹{product.unit_price}</TableCell>
                                 <TableCell className="text-center">
-                                    <Badge variant={Number(product.total_stock) <= product.reorder_level ? "destructive" : "outline"} className="dark:border-slate-700 dark:text-slate-300">
+                                    <Badge variant={Number(product.total_stock) <= Number(product.reorder_level) ? "destructive" : "outline"} className="dark:border-slate-700 dark:text-slate-300">
                                         {Number(product.total_stock)}
                                     </Badge>
                                 </TableCell>
@@ -516,7 +540,7 @@ const Products: React.FC = () => {
                                             <SelectValue placeholder="Select Category" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-                                            {categories.map((cat: any) => (
+                                            {categories.map((cat: Category) => (
                                                 <SelectItem key={cat.id} value={cat.name} className="text-slate-900 dark:text-gray-100 focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
                                                     {cat.name}
                                                 </SelectItem>
@@ -696,7 +720,7 @@ const Products: React.FC = () => {
                     <div className="py-4 space-y-4">
                         <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <span className="text-sm text-slate-500 dark:text-slate-400">Current Stock</span>
-                            <Badge variant={Number(adjustingProduct?.total_stock) <= (adjustingProduct?.reorder_level || 0) ? "destructive" : "outline"} className="text-base font-medium">
+                            <Badge variant={Number(adjustingProduct?.total_stock) <= Number(adjustingProduct?.reorder_level || 0) ? "destructive" : "outline"} className="text-base font-medium">
                                 {adjustingProduct ? Number(adjustingProduct.total_stock) : 0} {adjustingProduct?.unit || ''}
                             </Badge>
                         </div>

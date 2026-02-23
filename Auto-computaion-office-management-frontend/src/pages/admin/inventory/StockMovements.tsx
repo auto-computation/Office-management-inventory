@@ -168,9 +168,9 @@ const StockMovements: React.FC = () => {
             setIsAddModalOpen(false);
             showSuccess('Stock movement recorded successfully');
             fetchMovements();
-        } catch (error: any) {
+        } catch (error) {
             console.error("Failed to add movement:", error);
-            showError(error.message || 'Failed to record movement');
+            showError(error instanceof Error ? error.message : 'Failed to record movement');
         } finally {
             setSubmitting(false);
         }
