@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import pool from "../../db/db.js";
+import bcrypt from "bcrypt";
 import { authenticateToken } from "../../middlewares/authenticateToken.js";
 import isAdmin from "../../middlewares/isAdmin.js";
 
@@ -76,6 +77,46 @@ router.post(
   },
 );
 
+// ==========================================
+// CATEGORIES
+// ==========================================
+
+router.get(
+  "/categories",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const query = `SELECT * FROM project_categories ORDER BY name ASC`;
+      const result = await pool.query(query);
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching project categories:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+router.post(
+  "/categories",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { name } = req.body;
+      if (!name)
+        return res.status(400).json({ message: "Category name is required" });
+
+      const query = `INSERT INTO project_categories (name) VALUES ($1) RETURNING *`;
+      const result = await pool.query(query, [name]);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("Error creating project category:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
 // Get Projects
 router.get(
   "/",
@@ -138,7 +179,7 @@ router.get(
       const [milestonesVal, expensesVal, invoicesVal, membersVal, filesVal] =
         await Promise.all([
           pool.query(
-            "SELECT * FROM project_milestones WHERE project_id = $1 ORDER BY due_date ASC",
+            "SELECT * FROM project_milestones WHERE project_id = $1 ORDER BY CASE WHEN status = 'Completed' THEN 1 ELSE 0 END, due_date ASC NULLS LAST",
             [id],
           ),
           pool.query(
@@ -253,6 +294,69 @@ router.put(
   },
 );
 
+// Delete Project
+router.delete(
+  "/:id",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { password } = req.body;
+
+      // Ensure req.user exists from authenticateToken middleware
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Check existence and get status
+      const check = await pool.query(
+        "SELECT id, status FROM projects WHERE id = $1",
+        [id],
+      );
+      if (check.rows.length === 0) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const projectStatus = check.rows[0].status;
+
+      // If project is started, require and verify password
+      if (projectStatus !== "Not Started") {
+        if (!password) {
+          return res.status(400).json({
+            message: "Admin password is required to delete a started project.",
+          });
+        }
+
+        const userQuery = await pool.query(
+          "SELECT password_hash FROM users WHERE id = $1",
+          [req.user.id],
+        );
+        if (userQuery.rows.length === 0) {
+          return res.status(401).json({ message: "Admin user not found." });
+        }
+
+        const isMatch = await bcrypt.compare(
+          password,
+          userQuery.rows[0].password_hash,
+        );
+        if (!isMatch) {
+          return res.status(403).json({ message: "Incorrect password." });
+        }
+      }
+
+      // Perform deletion
+      // Assuming ON DELETE CASCADE is set for project_milestones, project_expenses, project_invoices, project_members, project_files.
+      await pool.query("DELETE FROM projects WHERE id = $1", [id]);
+
+      res.json({ message: "Project deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
 // ==========================================
 // MILESTONES
 // ==========================================
@@ -266,9 +370,10 @@ router.post(
       const { id } = req.params;
       const { name, due_date, status } = req.body;
       // Verify ownership
-      const check = await pool.query("SELECT id FROM projects WHERE id = $1", [
-        id,
-      ]);
+      const check = await pool.query(
+        "SELECT id, status FROM projects WHERE id = $1",
+        [id],
+      );
       if (check.rows.length === 0)
         return res.status(404).json({ message: "Project not found" });
 
@@ -283,9 +388,80 @@ router.post(
         due_date,
         status || "Pending",
       ]);
+
+      // Evaluate all milestones to determine project status
+      const milestonesQuery = await pool.query(
+        "SELECT status FROM project_milestones WHERE project_id = $1",
+        [id],
+      );
+
+      const allCompleted =
+        milestonesQuery.rows.length > 0 &&
+        milestonesQuery.rows.every((m) => m.status === "Completed");
+
+      let newProjectStatus = allCompleted ? "Completed" : "In Progress";
+
+      if (check.rows[0].status !== newProjectStatus) {
+        await pool.query("UPDATE projects SET status = $1 WHERE id = $2", [
+          newProjectStatus,
+          id,
+        ]);
+      }
+
       res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error("Error adding milestone:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+router.put(
+  "/:id/milestones/:milestoneId/status",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { id, milestoneId } = req.params;
+      const { status } = req.body;
+
+      const check = await pool.query("SELECT id FROM projects WHERE id = $1", [
+        id,
+      ]);
+      if (check.rows.length === 0)
+        return res.status(404).json({ message: "Project not found" });
+
+      const query = `
+        UPDATE project_milestones 
+        SET status = $1 
+        WHERE id = $2 AND project_id = $3
+        RETURNING *
+      `;
+      const result = await pool.query(query, [status, milestoneId, id]);
+
+      if (result.rows.length === 0)
+        return res.status(404).json({ message: "Milestone not found" });
+
+      // Evaluate all milestones to determine project status
+      const milestonesQuery = await pool.query(
+        "SELECT status FROM project_milestones WHERE project_id = $1",
+        [id],
+      );
+
+      const allCompleted =
+        milestonesQuery.rows.length > 0 &&
+        milestonesQuery.rows.every((m) => m.status === "Completed");
+
+      let newProjectStatus = allCompleted ? "Completed" : "In Progress";
+
+      await pool.query("UPDATE projects SET status = $1 WHERE id = $2", [
+        newProjectStatus,
+        id,
+      ]);
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Error updating milestone status:", error);
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -352,6 +528,63 @@ router.post(
       }
     } catch (error) {
       console.error("Error adding expense:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Delete Expense
+router.delete(
+  "/:id/expenses/:expenseId",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { id, expenseId } = req.params;
+
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+
+        // Get expense amount before deleting
+        const expenseQuery = await client.query(
+          "SELECT amount FROM project_expenses WHERE id = $1 AND project_id = $2",
+          [expenseId, id],
+        );
+
+        if (expenseQuery.rows.length === 0) {
+          await client.query("ROLLBACK");
+          return res.status(404).json({ message: "Expense not found" });
+        }
+
+        const amount = expenseQuery.rows[0].amount;
+
+        // Delete Expense
+        await client.query(
+          "DELETE FROM project_expenses WHERE id = $1 AND project_id = $2",
+          [expenseId, id],
+        );
+
+        // Update Project Actual Cost
+        await client.query(
+          `
+                UPDATE projects 
+                SET actual_cost = actual_cost - $1, updated_at = NOW()
+                WHERE id = $2
+            `,
+          [amount, id],
+        );
+
+        await client.query("COMMIT");
+        res.json({ message: "Expense deleted successfully" });
+      } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error("Error deleting expense:", error);
       res.status(500).json({ message: "Server error" });
     }
   },

@@ -135,6 +135,13 @@ CREATE TABLE project_categories (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE contract_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     department_id INT REFERENCES departments(id) ON DELETE SET NULL,
@@ -599,3 +606,12 @@ INSERT INTO users (
     'Active',
     0.00
 );
+
+INSERT INTO contract_types (name) VALUES 
+('Fixed Price'),
+('Time and Materials'),
+('Retainer'),
+('Annual Maintenance Contract (AMC)'),
+('Service Level Agreement (SLA)'),
+('Dedicated Team'),
+('Others');

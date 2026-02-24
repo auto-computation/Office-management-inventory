@@ -28,6 +28,7 @@ import {
   ShoppingCart,
   Receipt,
   CreditCard,
+  Building2,
 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useUser } from "./UserProvider";
@@ -75,6 +76,7 @@ const navItems: NavItem[] = [
       ]
   },
   { label: "Projects", to: "/super-admin/projects", icon: <Folder size={20} /> },
+  { label: "Clients", to: "/super-admin/clients", icon: <Building2 size={20} /> },
     {
     label: "Contracts",
     to: "/super-admin/contracts",

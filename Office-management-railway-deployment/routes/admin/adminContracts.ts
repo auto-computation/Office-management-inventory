@@ -6,6 +6,76 @@ import isAdmin from "../../middlewares/isAdmin.js";
 const router = express.Router();
 
 // ==========================================
+// CONTRACT TYPES
+// ==========================================
+
+// Get All Contract Types
+router.get(
+  "/types",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM contract_types ORDER BY CASE WHEN name = 'Others' THEN 1 ELSE 0 END, name ASC",
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching contract types:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Add Contract Type
+router.post(
+  "/types",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { name } = req.body;
+      if (!name) return res.status(400).json({ message: "Name is required" });
+
+      const result = await pool.query(
+        "INSERT INTO contract_types (name) VALUES ($1) ON CONFLICT (name) DO NOTHING RETURNING *",
+        [name],
+      );
+
+      if (result.rows.length === 0) {
+        const existing = await pool.query(
+          "SELECT * FROM contract_types WHERE name = $1",
+          [name],
+        );
+        return res.status(200).json(existing.rows[0]);
+      }
+
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error("Error adding contract type:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Delete Contract Type
+router.delete(
+  "/types/:id",
+  authenticateToken,
+  isAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await pool.query("DELETE FROM contract_types WHERE id = $1", [id]);
+      res.json({ message: "Contract type deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting contract type:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// ==========================================
 // CONTRACTS
 // ==========================================
 

@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Plus, Search, Users, ArrowRight, Loader2, Folder, Target, FileText, IndianRupee, X, Calendar as CalendarIcon } from "lucide-react";
 import { useNotification } from "@/components/useNotification";
@@ -24,86 +25,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
-
-// Dummy Data (Outside component to avoid re-creation)
-const categories = ["Web Development", "Mobile App", "UI/UX Design", "Marketing", "SEO"];
-const departments = ["Engineering", "Design", "Marketing", "Sales", "HR"];
-const dummyMembers = [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Mike Johnson" },
-    { id: "4", name: "Sarah Williams" },
-    { id: "5", name: "David Brown" }
-];
-
-const dummyProjects = [
-    {
-        id: 1,
-        name: "Website Redesign",
-        status: "In Progress",
-        deadline: "2024-12-31",
-        description: "Revamp the corporate website with new branding and improved UX.",
-        client_name: "Acme Corp",
-        estimated_budget: 15000,
-        category: "Web Development",
-        department: "Design"
-    },
-    {
-        id: 2,
-        name: "Mobile App Development",
-        status: "On Hold",
-        deadline: "2024-10-15",
-        description: "iOS and Android app for customer loyalty program.",
-        client_name: "RetailPlus",
-        estimated_budget: 25000,
-        category: "Mobile App",
-        department: "Engineering"
-    },
-    {
-        id: 3,
-        name: "Marketing Campaign Q4",
-        status: "Not Started",
-        deadline: "2024-11-01",
-        description: "Social media and email marketing strategy for holiday season.",
-        client_name: "Internal",
-        estimated_budget: 5000,
-        category: "Marketing",
-        department: "Marketing"
-    },
-    {
-        id: 4,
-        name: "Internal HR Portal",
-        status: "Completed",
-        deadline: "2024-08-30",
-        description: "Employee self-service portal for leave and benefits.",
-        client_name: "Internal",
-        estimated_budget: 8000,
-        category: "Web Development",
-        department: "HR"
-    },
-    {
-        id: 5,
-        name: "SEO Optimization",
-        status: "In Progress",
-        deadline: "2024-09-30",
-        description: "Improve search engine ranking for main product pages.",
-        client_name: "TechStart",
-        estimated_budget: 3000,
-        category: "SEO",
-        department: "Marketing"
-    }
-];
-
-const dummyClients = [
-    { id: 101, name: "Dora Green", email: "y.sipesh@example.org", company: "Brekke Group" },
-    { id: 102, name: "Dr. Garnett Reichel MD", email: "julius91@example.org", company: "Rogahn, Turcotte and Blanda" },
-    { id: 103, name: "Eryn Borer II", email: "client@example.com", company: "Walsh Ltd" },
-    { id: 104, name: "Jason Hudson", email: "jason.hudson@example.org", company: "Hudson Inc" },
-    { id: 105, name: "Keaton Sawayn", email: "keaton.sawayn@example.org", company: "Bartoletti - Ledner" }
-];
 
 const ProjectsDashboard: React.FC = () => {
     const { showSuccess, showError } = useNotification();
@@ -112,10 +45,18 @@ const ProjectsDashboard: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [projects, setProjects] = useState<any[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [employees, setEmployees] = useState<any[]>([]); // For client selection (using users for now)
+    const [employees, setEmployees] = useState<any[]>([]); 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [clients, setClients] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [departments, setDepartments] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [categories, setCategories] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState("");
 
     // Form
     const [newProject, setNewProject] = useState({
@@ -146,47 +87,64 @@ const ProjectsDashboard: React.FC = () => {
             const res = await fetch(`${API_BASE_URL}/admin/projects`, { credentials: "include" });
             if (res.ok) {
                 const data = await res.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    setProjects(data);
-                } else {
-                    setProjects(dummyProjects);
-                }
+                setProjects(Array.isArray(data) ? data : []);
             } else {
-                setProjects(dummyProjects);
+                setProjects([]);
             }
         } catch (error) {
             console.error("Failed to fetch projects", error);
-            // Fallback to dummy data
-            setProjects(dummyProjects);
+            setProjects([]);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
-    const fetchUsers = useCallback(async () => {
+    const fetchFormData = useCallback(async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/admin/emp/all`, { credentials: "include" });
             if (res.ok) {
                 const data = await res.json();
-                if (data.users && data.users.length > 0) {
-                    setEmployees(data.users);
-                } else {
-                    setEmployees(dummyClients);
-                }
-            } else {
-                setEmployees(dummyClients);
+                setEmployees(data.users || []);
             }
         } catch (error) {
             console.error("Failed to fetch users", error);
-            // Fallback to dummy data
-            setEmployees(dummyClients);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/clients`, { credentials: "include" });
+            if (res.ok) {
+                const data = await res.json();
+                setClients(data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch clients", error);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/departments/getAll`, { credentials: "include" });
+            if (res.ok) {
+                const data = await res.json();
+                setDepartments(data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch departments", error);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/projects/categories`, { credentials: "include" });
+            if (res.ok) {
+                const data = await res.json();
+                setCategories(data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch categories", error);
         }
     }, []);
 
     useEffect(() => {
         fetchProjects();
-        fetchUsers();
-    }, [fetchProjects, fetchUsers]);
+        fetchFormData();
+    }, [fetchProjects, fetchFormData]);
 
     const handleCreateProject = async () => {
         try {
@@ -200,25 +158,57 @@ const ProjectsDashboard: React.FC = () => {
                 return;
             }
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const startDate = new Date(newProject.start_date);
+            startDate.setHours(0, 0, 0, 0);
+
+            if (startDate < today) {
+                showError("Start date cannot be in the past");
+                return;
+            }
+
             setIsSubmitting(true);
 
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const res = await fetch(`${API_BASE_URL}/admin/projects`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    name: newProject.name,
+                    client_id: newProject.client_id || null,
+                    department_id: newProject.department || null,
+                    category_id: newProject.category || null,
+                    summary: newProject.summary,
+                    status: newProject.status,
+                    start_date: newProject.start_date,
+                    deadline: newProject.deadline || null,
+                    budget: newProject.budget,
+                    estimated_hours: newProject.hours_estimate,
+                    is_public_gantt: newProject.is_public_gantt,
+                    is_public_task_board: newProject.is_public_task_board,
+                    requires_admin_approval: newProject.requires_admin_approval,
+                    send_to_client: newProject.send_to_client,
+                    description: newProject.summary || "No description provided."
+                })
+            });
 
-            // DEMO MODE: Create project in frontend state only
-            const newProjectData = {
-                id: Date.now(), // Temporary ID
-                ...newProject,
-                client_name: employees.find(e => e.id.toString() === newProject.client_id)?.name || "Unknown Client",
-                files: newProject.files.map(f => f.name), // Store filenames array for demo
-                status: "Not Started",
-                estimated_budget: newProject.budget,
-                description: newProject.summary || "No description provided."
-            };
+            if (!res.ok) throw new Error("Failed to create project");
+            const projectData = await res.json();
 
-            setProjects([newProjectData, ...projects]);
-            
-            showSuccess("Project created successfully (Demo Mode)");
+            // Handle adding members iteratively after creation
+            if (newProject.members.length > 0) {
+                await Promise.all(newProject.members.map(memberId => 
+                    fetch(`${API_BASE_URL}/admin/projects/${projectData.id}/members`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({ user_id: memberId, role: "Member" })
+                    })
+                ));
+            }
+
+            showSuccess("Project created successfully");
             setIsAddModalOpen(false);
             setNewProject({
                 name: "",
@@ -240,12 +230,40 @@ const ProjectsDashboard: React.FC = () => {
                 files: [],
                 no_end_date: false
             });
-            // fetchProjects(); // Don't fetch, as it would adhere to server state
+            fetchProjects();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             showError(err.message);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleCreateCategory = async () => {
+        if (!newCategoryName || newCategoryName.trim() === "") return;
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/projects/categories`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ name: newCategoryName.trim() })
+            });
+            
+            if (res.ok) {
+                const newCat = await res.json();
+                setCategories(prev => [...prev, newCat]);
+                setNewProject({ ...newProject, category: newCat.id.toString() });
+                showSuccess("Category created successfully");
+            } else {
+                showError("Failed to create category");
+            }
+        } catch (error) {
+            console.error("Failed to create category", error);
+            showError("Network error while creating category");
+        } finally {
+            setIsCategoryModalOpen(false);
+            setNewCategoryName("");
         }
     };
 
@@ -257,7 +275,7 @@ const ProjectsDashboard: React.FC = () => {
             case "In Progress": return "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400";
             case "On Hold": return "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400";
             case "Cancelled": return "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400";
-            default: return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
+            default: return "bg-[#e3e2e1] text-slate-700 dark:bg-slate-800 dark:text-slate-400";
         }
     };
 
@@ -278,71 +296,144 @@ const ProjectsDashboard: React.FC = () => {
              <div className="flex items-center gap-4 mb-6">
                  <div className="relative w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input placeholder="Search projects..." className="pl-10 bg-white dark:bg-slate-900" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                    <Input placeholder="Search projects..." className="pl-10 bg-white dark:bg-slate-900 border-[#e3e2e1] dark:border-slate-800" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </div>
             </div>
 
-            {/* Grid */}
+            {/* Content List */}
             {isLoading ? (
-                <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>
+                <div className="flex justify-center p-12"><Loader2 className="animate-spin text-blue-500 h-8 w-8" /></div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredProjects.map((project) => (
-                        <Card 
-                            key={project.id} 
-                            onClick={() => {
-                                const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
-                                navigate(`${basePath}/projects/${project.id}`);
-                            }}
-                            className="group relative cursor-pointer hover:shadow-lg transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            
-                            <div className="p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                     <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                                        {project.status}
-                                    </div>
-                                    <span className="text-xs text-slate-400">Due: {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'N/A'}</span>
-                                </div>
-
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                    {project.name}
-                                </h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-6 h-10">
-                                    {project.description || "No description provided."}
-                                </p>
-
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                                        <Users size={16} className="text-slate-400" />
-                                        <span>{project.client_name || "Internal"}</span>
-                                    </div>
-                                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                                        <IndianRupee size={16} className="text-green-500" />
-                                        <span>{Number(project.estimated_budget).toLocaleString()}</span>
-                                    </div>
-                                </div>
+                <>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block bg-white dark:bg-slate-900 shadow-sm rounded-xl border border-[#e3e2e1] dark:border-slate-800 overflow-hidden">
+                        <Table>
+                            <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+                                <TableRow>
+                                    <TableHead className="font-bold">Project Name</TableHead>
+                                    <TableHead className="font-bold">Status</TableHead>
+                                    <TableHead className="font-bold">Client</TableHead>
+                                    <TableHead className="font-bold">Budget</TableHead>
+                                    <TableHead className="font-bold">Deadline</TableHead>
+                                    <TableHead className="text-right font-bold w-[120px]">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredProjects.map((project) => (
+                                    <TableRow 
+                                        key={project.id} 
+                                        className="border-[#e3e2e1] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
+                                        onClick={() => {
+                                            const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+                                            navigate(`${basePath}/projects/${project.id}`);
+                                        }}
+                                    >
+                                        <TableCell className="font-bold text-slate-900 dark:text-white">
+                                            {project.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={getStatusColor(project.status)}>
+                                                {project.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Users size={14} className="text-slate-400" />
+                                                {project.client_name || "Internal"}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-slate-900 dark:text-white font-semibold">
+                                            <div className="flex items-center gap-1">
+                                                <IndianRupee size={14} className="text-green-500" />
+                                                {Number(project.budget).toLocaleString()}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <CalendarIcon size={14} className="text-slate-400" />
+                                                {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'N/A'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end items-center gap-1 text-blue-600 font-medium text-xs">
+                                                View <ArrowRight size={14} />
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        {filteredProjects.length === 0 && (
+                            <div className="py-20 text-center flex flex-col items-center justify-center">
+                                <Folder className="h-16 w-16 text-slate-200 dark:text-slate-800 mb-4" />
+                                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">No projects found</h3>
+                                <p className="text-slate-500 max-w-sm mb-6">You haven't added any projects yet, or no projects match your search criteria.</p>
+                                <Button onClick={() => setIsAddModalOpen(true)} variant="outline" className="border-[#e3e2e1] dark:border-slate-700">
+                                    Create your first project
+                                </Button>
                             </div>
-                            
-                            <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-3 flex justify-between items-center text-xs font-medium text-slate-500 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10 transition-colors">
-                                <span>View Details</span>
-                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        )}
+                    </div>
+
+                    {/* Mobile/Tablet Card View */}
+                    <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {filteredProjects.map((project) => (
+                            <Card 
+                                key={project.id} 
+                                onClick={() => {
+                                    const basePath = window.location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+                                    navigate(`${basePath}/projects/${project.id}`);
+                                }}
+                                className="group relative cursor-pointer hover:shadow-lg transition-all border-[#e3e2e1] dark:border-slate-800 bg-white dark:bg-slate-900/50 overflow-hidden"
+                            >
+                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                         <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                                            {project.status}
+                                        </div>
+                                        <span className="text-xs text-slate-400">Due: {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'N/A'}</span>
+                                    </div>
+
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                        {project.name}
+                                    </h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-6 h-10">
+                                        {project.description || "No description provided."}
+                                    </p>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-[#e3e2e1] dark:border-slate-800">
+                                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                            <Users size={16} className="text-slate-400" />
+                                            <span>{project.client_name || "Internal"}</span>
+                                        </div>
+                                         <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                                            <IndianRupee size={16} className="text-green-500" />
+                                            <span>{Number(project.budget).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-3 flex justify-between items-center text-xs font-medium text-slate-500 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/10 transition-colors">
+                                    <span>View Details</span>
+                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                </div>
+                            </Card>
+                        ))}
+                        {filteredProjects.length === 0 && (
+                            <div className="col-span-full text-center py-12 text-slate-500">
+                                No projects found. Create one to get started.
                             </div>
-                        </Card>
-                    ))}
-                    {filteredProjects.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-slate-500">
-                            No projects found. Create one to get started.
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                </>
             )}
 
             {/* Create Modal */}
             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-                <DialogContent className="max-w-4xl p-0 overflow-hidden h-[90vh] flex flex-col bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-2xl">
-                    <DialogHeader className="pt-6 px-8 border-b border-slate-100 dark:border-slate-800 pb-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <DialogContent className="max-w-4xl p-0 overflow-hidden h-[90vh] flex flex-col bg-white dark:bg-slate-950 border border-[#e3e2e1] dark:border-slate-800 shadow-2xl">
+                    <DialogHeader className="pt-6 px-8 border-b border-[#e3e2e1] dark:border-slate-800 pb-4 bg-slate-50/50 dark:bg-slate-900/50">
                         <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <Folder className="h-6 w-6 text-blue-600" />
                             Create New Project
@@ -390,6 +481,7 @@ const ProjectsDashboard: React.FC = () => {
                                                         <Calendar
                                                             mode="single"
                                                             selected={newProject.start_date ? new Date(newProject.start_date) : undefined}
+                                                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                                                             onSelect={(date) => {
                                                                 // Convert to local YYYY-MM-DD string to maintain date state compatibility
                                                                 if(date) {
@@ -439,7 +531,7 @@ const ProjectsDashboard: React.FC = () => {
                                                                 !newProject.deadline && "text-muted-foreground",
                                                                 newProject.deadline && "pr-10"
                                                             )}
-                                                            disabled={newProject.no_end_date}
+                                                            disabled={newProject.no_end_date || !newProject.start_date}
                                                         >
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                                             {newProject.deadline ? format(new Date(newProject.deadline), "PPP") : <span>Pick a date</span>}
@@ -449,6 +541,7 @@ const ProjectsDashboard: React.FC = () => {
                                                         <Calendar
                                                             mode="single"
                                                             selected={newProject.deadline ? new Date(newProject.deadline) : undefined}
+                                                            disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                                                             onSelect={(date) => {
                                                                 if(date) {
                                                                     const dateStr = [
@@ -484,24 +577,34 @@ const ProjectsDashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            <Separator className="bg-slate-100 dark:bg-slate-800" />
+                            <Separator className="bg-[#e3e2e1] dark:bg-slate-800" />
 
                             {/* Section 2: Classification */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Project Category</Label>
-                                    <Select value={newProject.category} onValueChange={(val) => setNewProject({ ...newProject, category: val })}>
-                                        <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
-                                            <SelectValue placeholder="Select Category" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
-                                            {categories.map((cat) => (
-                                                <SelectItem key={cat} value={cat} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
-                                                    {cat}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="flex gap-2">
+                                        <Select value={newProject.category} onValueChange={(val) => setNewProject({ ...newProject, category: val })}>
+                                            <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-[#e3e2e1] dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
+                                                <SelectValue placeholder="Select Category" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-white dark:bg-slate-900 border-[#e3e2e1] dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
+                                                {categories.map((cat: { id: string | number, name: string }) => (
+                                                    <SelectItem key={cat.id || cat.name} value={cat.id?.toString() || cat.name} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
+                                                        {cat.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            className="h-11 w-11 px-0 shrink-0 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 hover:cursor-pointer"
+                                            onClick={() => setIsCategoryModalOpen(true)}
+                                        >
+                                            <Plus className="h-5 w-5 text-slate-500" />
+                                        </Button>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-slate-700 dark:text-slate-300 font-medium">Department</Label>
@@ -510,9 +613,9 @@ const ProjectsDashboard: React.FC = () => {
                                             <SelectValue placeholder="Select Department" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
-                                            {departments.map((dep) => (
-                                                <SelectItem key={dep} value={dep} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
-                                                    {dep}
+                                            {departments.map((dep: { id: string | number, name: string }) => (
+                                                <SelectItem key={dep.id} value={dep.id.toString()} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
+                                                    {dep.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -525,10 +628,10 @@ const ProjectsDashboard: React.FC = () => {
                                             <SelectValue placeholder="Select Client" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 w-[var(--radix-select-trigger-width)]">
-                                            {employees.length > 0 ? (
-                                                employees.map(user => (
-                                                    <SelectItem key={user.id} value={user.id.toString()} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
-                                                        {user.name} {user.company ? `- ${user.company}` : (user.email ? `- ${user.email}` : '')}
+                                            {clients.length > 0 ? (
+                                                clients.map(client => (
+                                                    <SelectItem key={client.id} value={client.id.toString()} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
+                                                        {client.name} {client.company_name ? `- ${client.company_name}` : ''}
                                                     </SelectItem>
                                                 ))
                                             ) : (
@@ -549,7 +652,7 @@ const ProjectsDashboard: React.FC = () => {
                                 />
                             </div>
 
-                            <Separator className="bg-slate-100 dark:bg-slate-800" />
+                            <Separator className="bg-[#e3e2e1] dark:bg-slate-800" />
 
                             {/* Section 3: Settings */}
                             <div className="space-y-4">
@@ -601,27 +704,37 @@ const ProjectsDashboard: React.FC = () => {
                                     <div className="space-y-2">
                                         <Label className="text-slate-700 dark:text-slate-300 font-medium">Add Project Members <span className="text-red-500">*</span></Label>
                                         <Select
+                                            value=""
                                             onValueChange={(val) => {
-                                                if (val && !newProject.members.includes(val)) {
+                                                if (!newProject.members.includes(val)) {
                                                     setNewProject({ ...newProject, members: [...newProject.members, val] });
                                                 }
                                             }}
+                                            disabled={!newProject.department}
                                         >
                                             <SelectTrigger className="w-full h-11 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none outline-none text-slate-900 dark:text-white">
                                                 <SelectValue placeholder="Select Members" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                                                {dummyMembers.map(member => (
-                                                    <SelectItem key={member.id} value={member.id} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
-                                                        {member.name}
-                                                    </SelectItem>
-                                                ))}
+                                                {!newProject.department ? (
+                                                    <div className="p-2 text-sm text-slate-500 text-center">Please select a department first</div>
+                                                ) : employees.filter(e => e.department_id?.toString() === newProject.department).length === 0 ? (
+                                                    <div className="p-2 text-sm text-slate-500 text-center">No employees in this department</div>
+                                                ) : (
+                                                    employees
+                                                        .filter(member => member.department_id?.toString() === newProject.department && !newProject.members.includes(member.id.toString()))
+                                                        .map(member => (
+                                                            <SelectItem key={member.id} value={member.id.toString()} className="text-slate-900 dark:text-white focus:bg-slate-100 dark:focus:bg-slate-800 cursor-pointer">
+                                                                {member.name}
+                                                            </SelectItem>
+                                                        ))
+                                                )}
                                             </SelectContent>
                                         </Select>
                                         {/* Selected Members Chips */}
                                         <div className="flex flex-wrap gap-2 mt-2">
                                             {newProject.members.map(memberId => {
-                                                const member = dummyMembers.find(m => m.id === memberId);
+                                                const member = employees.find(m => m.id.toString() === memberId);
                                                 return member ? (
                                                     <div key={memberId} className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
                                                         {member.name}
@@ -744,7 +857,7 @@ const ProjectsDashboard: React.FC = () => {
                         </div>
                     </ScrollArea>
 
-                    <DialogFooter className="px-8 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-between items-center w-full">
+                    <DialogFooter className="px-8 py-4 border-t border-[#e3e2e1] dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-between items-center w-full">
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="send-client"
@@ -776,6 +889,44 @@ const ProjectsDashboard: React.FC = () => {
                                 )}
                             </Button>
                         </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Create Category Modal */}
+            <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+                <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-950 border border-[#e3e2e1] dark:border-slate-800 shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-slate-900 dark:text-white">Add New Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="category-name" className="text-slate-700 dark:text-slate-300">Category Name</Label>
+                            <Input
+                                id="category-name"
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                placeholder="Enter category name"
+                                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleCreateCategory();
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => {
+                            setIsCategoryModalOpen(false);
+                            setNewCategoryName("");
+                        }} className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-gray-300">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleCreateCategory} className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700">
+                            Add Category
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

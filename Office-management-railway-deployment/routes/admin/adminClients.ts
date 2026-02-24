@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import pool from "../../db/db.js";
 import { authenticateToken } from "../../middlewares/authenticateToken.js";
 import isAdmin from "../../middlewares/isAdmin.js";
+import { sendEmail } from "../../utils/mailer.js";
+import { clientWelcomeEmail } from "../../templates/clientWelcomeEmail.js";
 
 const router = express.Router();
 
@@ -74,7 +76,23 @@ router.post(
         company_name,
         address,
       ]);
-      res.status(201).json(result.rows[0]);
+
+      const newClient = result.rows[0];
+
+      // Send welcome email to the newly created client
+      try {
+        await sendEmail({
+          to: email,
+          subject: "Welcome to Auto Computation!",
+          html: clientWelcomeEmail(name, company_name, email, phone),
+        });
+      } catch (emailError) {
+        console.error("Failed to send welcome email to client:", emailError);
+        // We don't fail the request if the email fails, but we could notify the frontend
+        return res.status(201).json({ ...newClient, emailSent: false });
+      }
+
+      res.status(201).json({ ...newClient, emailSent: true });
     } catch (error) {
       console.error("Error creating client:", error);
       res.status(500).json({ message: "Server error" });

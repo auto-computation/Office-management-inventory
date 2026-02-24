@@ -53,8 +53,9 @@ const VendorPayments = lazy(() => import('./pages/admin/inventory/VendorPayments
 const StockMovements = lazy(() => import('./pages/admin/inventory/StockMovements'));
 const ProjectsDashboard = lazy(() => import('./pages/admin/projects/ProjectsDashboard'));
 const ProjectDetails = lazy(() => import('./pages/admin/projects/ProjectDetails'));
+const EditProject = lazy(() => import('./pages/admin/projects/EditProject'));
 const Contracts = lazy(() => import('./pages/admin/Contracts/Contracts'));
-
+const Clients = lazy(() => import('./pages/admin/clients/Clients'));
 
 // Auth Pages (Non-critical)
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
@@ -249,10 +250,17 @@ const routes: RouteObject[] = [
         element: <ProjectDetails />,
       },
       {
+        path: "projects/:id/edit",
+        element: <EditProject />,
+      },
+      {
         path: "contracts",
         element: <Contracts />,
       },
-
+      {
+        path: "clients",
+        element: <Clients />,
+      },
       {
         path: "tasks",
         element: <Task />,
@@ -374,8 +382,16 @@ const routes: RouteObject[] = [
         element: <ProjectDetails />,
       },
       {
+        path: "projects/:id/edit",
+        element: <EditProject />,
+      },
+      {
         path: "contracts",
         element: <Contracts />,
+      },
+      {
+        path: "clients",
+        element: <Clients />,
       },
     ],
   },

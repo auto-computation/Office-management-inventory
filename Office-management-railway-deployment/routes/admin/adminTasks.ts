@@ -111,7 +111,6 @@ router.post(
       const {
         title,
         project_id,
-        description, // details alias
         details,
         priority,
         status,
@@ -134,16 +133,15 @@ router.post(
       // 1. Insert Task
       const insertTaskQuery = `
             INSERT INTO tasks (
-                title, project_id, description, details, priority, status, 
+                title, project_id, details, priority, status, 
                 start_date, due_date, created_by
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id, title
         `;
       const taskResult = await client.query(insertTaskQuery, [
         title,
         project_id || null,
-        description || null,
         details || null,
         priority || "Medium",
         status || "Pending",
@@ -236,7 +234,6 @@ router.patch(
       const {
         title,
         project_id,
-        description,
         details,
         priority,
         status,
@@ -259,10 +256,6 @@ router.patch(
       if (project_id !== undefined) {
         fields.push(`project_id = $${idx++}`);
         values.push(project_id);
-      }
-      if (description) {
-        fields.push(`description = $${idx++}`);
-        values.push(description);
       }
       if (details) {
         fields.push(`details = $${idx++}`);
